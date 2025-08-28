@@ -1,0 +1,301 @@
+'use client';
+
+import type React from 'react';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Wrench, Calculator } from 'lucide-react';
+import PartsSelector from '@/components/parts-selector';
+import { Car } from '@/types';
+import { LoadingPage } from '@/components/ui/loading';
+
+interface SelectedPart {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  stock: number;
+  photoUrl: string | null;
+  quantity: number;
+}
+
+interface NewMaintenancePageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function NewMaintenancePage({ params }: NewMaintenancePageProps) {
+  const [car, setCar] = useState<Car | null>(null);
+  const [formData, setFormData] = useState({
+    description: '',
+    laborCost: '',
+    estimatedTime: '',
+  });
+  const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCar, setIsLoadingCar] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchCar();
+  }, [params.id]);
+
+  const fetchCar = async () => {
+    try {
+      const response = await fetch(`/api/cars/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCar(data.car);
+      } else {
+        setError('Error al cargar información del vehículo');
+      }
+    } catch (error) {
+      setError('Error al cargar información del vehículo');
+    } finally {
+      setIsLoadingCar(false);
+    }
+  };
+
+  const getPartsCost = () => {
+    return selectedParts.reduce((sum, part) => sum + part.price * part.quantity, 0);
+  };
+
+  const getLaborCost = () => {
+    return Number.parseFloat(formData.laborCost) || 0;
+  };
+
+  const getTotalCost = () => {
+    return getPartsCost() + getLaborCost();
+  };
+
+  const getMechanicShare = () => {
+    return getTotalCost() * 0.6;
+  };
+
+  const getAdminShare = () => {
+    return getTotalCost() * 0.4;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (!formData.description.trim()) {
+      setError('La descripción del trabajo es requerida');
+      setIsLoading(false);
+      return;
+    }
+
+    if (getLaborCost() <= 0) {
+      setError('El costo de mano de obra debe ser mayor a 0');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          carId: params.id,
+          description: formData.description,
+          laborCost: getLaborCost(),
+          estimatedTime: Number.parseInt(formData.estimatedTime) || null,
+          parts: selectedParts.map(part => ({
+            partId: part.id,
+            quantity: part.quantity,
+            unitPrice: part.price,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push(`/mechanic/maintenance/${data.maintenance.id}`);
+      } else {
+        setError(data.error);
+      }
+    } catch (error) {
+      setError('Error al crear el mantenimiento');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoadingCar) {
+    return <LoadingPage />;
+  }
+
+  if (!car) {
+    return (
+      <>
+        <div className="text-center py-12">
+          <Alert variant="destructive" className="max-w-md mx-auto">
+            <AlertDescription>No se pudo cargar la información del vehículo</AlertDescription>
+          </Alert>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-semibold tracking-heading">Nueva Reparación</h1>
+          <p className="text-muted-foreground text-xs">
+            {car.brand} {car.model} ({car.year}) • Placa: {car.licensePlate}
+          </p>
+          <p className="text-xs text-muted-foreground">Propietario: {car.owner.name}</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Work Description */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Descripción del Trabajo
+              </CardTitle>
+              <CardDescription>Detalla el trabajo que se realizará en el vehículo</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="description">Descripción del Mantenimiento</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  required
+                  placeholder="Ej: Cambio de aceite y filtro, revisión de frenos..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="laborCost">Costo de Mano de Obra (COP)</Label>
+                  <Input
+                    id="laborCost"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    className="text-xs"
+                    value={formData.laborCost}
+                    onChange={e => setFormData({ ...formData, laborCost: e.target.value })}
+                    required
+                    placeholder="50000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="estimatedTime">Tiempo Estimado (horas)</Label>
+                  <Input
+                    id="estimatedTime"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    className="text-xs"
+                    value={formData.estimatedTime}
+                    onChange={e => setFormData({ ...formData, estimatedTime: e.target.value })}
+                    placeholder="2"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Parts Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Selección de Repuestos</CardTitle>
+              <CardDescription>
+                Elige los repuestos que se utilizarán en la reparación
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PartsSelector selectedParts={selectedParts} onPartsChange={setSelectedParts} />
+            </CardContent>
+          </Card>
+
+          {/* Cost Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Resumen de Costos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span>Costo de Repuestos:</span>
+                  <span className="font-medium">${getPartsCost().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Mano de Obra:</span>
+                  <span className="font-medium">${getLaborCost().toLocaleString()}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Total:</span>
+                  <span>${getTotalCost().toLocaleString()}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <h4 className="font-medium text-foreground">Distribución de Ganancias:</h4>
+                <div className="flex justify-between">
+                  <span>Tu parte (60%):</span>
+                  <span className="font-medium">${getMechanicShare().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Administración (40%):</span>
+                  <span className="font-medium">${getAdminShare().toLocaleString()}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit */}
+          <div className="flex gap-4">
+            <Button type="submit" disabled={isLoading || getTotalCost() <= 0} className="flex-1">
+              {isLoading ? 'Creando...' : 'Iniciar Reparación'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              className="bg-transparent"
+              disabled={isLoading}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
