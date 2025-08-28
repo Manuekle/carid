@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session || session.user.role !== 'ADMIN') {
       return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
@@ -31,9 +31,6 @@ export async function GET() {
     return NextResponse.json(pendingMechanics);
   } catch (error) {
     console.error('Error fetching mechanic requests:', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
-    );
+    return new NextResponse(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 }

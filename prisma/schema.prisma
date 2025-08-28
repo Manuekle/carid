@@ -50,7 +50,7 @@ model User {
 model Car {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   vin         String   @unique
-  qrCode      String   @unique
+  qrCode      String?  @unique
   brand       String
   model       String
   year        Int

@@ -46,7 +46,7 @@ export default function ScannerPage() {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-2xl font-semibold tracking-heading">Escáner de Vehículos</h1>

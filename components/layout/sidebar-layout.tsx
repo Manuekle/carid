@@ -229,13 +229,13 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   const homePath = React.useMemo(() => {
     switch (userRole) {
       case 'ADMIN':
-        return '/admin';
+        return '/dashboard/admin';
       case 'MECHANIC':
-        return '/mechanic';
+        return '/dashboard/mechanic';
       case 'OWNER':
-        return '/owner';
+        return '/dashboard/owner';
       default:
-        return '/';
+        return '/dashboard';
     }
   }, [userRole]);
 

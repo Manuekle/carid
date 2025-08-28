@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
+import { Loading } from '@/components/ui/loading';
 
 interface Mechanic {
   id: string;
@@ -18,7 +19,9 @@ interface Mechanic {
 
 export default function MechanicsPage() {
   const router = useRouter();
-  const [loadingStates, setLoadingStates] = useState<Record<string, 'approving' | 'rejecting' | null>>({});
+  const [loadingStates, setLoadingStates] = useState<
+    Record<string, 'approving' | 'rejecting' | null>
+  >({});
   const [mechanics, setMechanics] = useState<Mechanic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,10 +47,13 @@ export default function MechanicsPage() {
 
   const handleStatusUpdate = async (mechanicId: string, action: 'approve' | 'reject') => {
     try {
-      setLoadingStates(prev => ({ ...prev, [mechanicId]: action === 'approve' ? 'approving' : 'rejecting' }));
-      
+      setLoadingStates(prev => ({
+        ...prev,
+        [mechanicId]: action === 'approve' ? 'approving' : 'rejecting',
+      }));
+
       const endpoint = action === 'approve' ? '/api/mechanic/approved' : '/api/mechanic/rejected';
-      
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -62,7 +68,7 @@ export default function MechanicsPage() {
 
       // Remove the mechanic from the list
       setMechanics(prev => prev.filter(m => m.id !== mechanicId));
-      
+
       toast.success(`Mecánico ${action === 'approve' ? 'aprobado' : 'rechazado'} correctamente`);
       // Refresh the list after a short delay to show the success message
       setTimeout(() => {
@@ -99,10 +105,7 @@ export default function MechanicsPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="sr-only">Cargando...</span>
-              </div>
+              <Loading />
             ) : mechanics.length > 0 ? (
               <div className="space-y-4">
                 {mechanics.map(mechanic => (
@@ -120,8 +123,8 @@ export default function MechanicsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">Pendiente</Badge>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="bg-green-600 hover:bg-green-700"
                         onClick={() => handleStatusUpdate(mechanic.id, 'approve')}
                         disabled={!!loadingStates[mechanic.id]}
@@ -133,8 +136,8 @@ export default function MechanicsPage() {
                         )}
                         {loadingStates[mechanic.id] === 'approving' ? 'Aprobando...' : 'Aprobar'}
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleStatusUpdate(mechanic.id, 'reject')}
                         disabled={!!loadingStates[mechanic.id]}
@@ -154,12 +157,12 @@ export default function MechanicsPage() {
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <div className="space-y-2">
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs">
                     No hay mecánicos pendientes de aprobación
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => router.refresh()}
                     className="mt-2"
                   >

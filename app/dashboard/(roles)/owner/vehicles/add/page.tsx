@@ -1,32 +1,92 @@
 'use client';
 
-import type React from 'react';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+
+interface VehicleFormData {
+  vin: string;
+  brand: string;
+  model: string;
+  year: string;
+  color: string;
+  licensePlate: string;
+}
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { QrCode } from 'lucide-react';
+import { QrCode, Download, Copy, Eye, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
+import { toast } from 'sonner';
+
+const INITIAL_FORM_DATA: VehicleFormData = {
+  vin: '',
+  brand: '',
+  model: '',
+  year: '',
+  color: '',
+  licensePlate: '',
+};
 
 export default function AddVehiclePage() {
-  const [formData, setFormData] = useState({
-    vin: '',
-    brand: '',
-    model: '',
-    year: '',
-    color: '',
-    licensePlate: '',
-  });
+  const [formData, setFormData] = useState<VehicleFormData>(INITIAL_FORM_DATA);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [qrCode, setQrCode] = useState<string>('');
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+  const [createdVehicleId, setCreatedVehicleId] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Limpiar error cuando el usuario empiece a escribir
+    if (error) {
+      setError('');
+    }
+  };
+
+  const validateForm = () => {
+    const requiredFields: (keyof VehicleFormData)[] = [
+      'vin',
+      'brand',
+      'model',
+      'year',
+      'color',
+      'licensePlate',
+    ];
+    const emptyFields = requiredFields.filter(field => !formData[field].trim());
+
+    if (emptyFields.length > 0) {
+      setError('Por favor completa todos los campos requeridos');
+      return false;
+    }
+
+    if (formData.vin.length !== 17) {
+      setError('El VIN debe tener exactamente 17 caracteres');
+      return false;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const year = parseInt(formData.year);
+    if (year < 1900 || year > currentYear + 1) {
+      setError(`El año debe estar entre 1900 y ${currentYear + 1}`);
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -45,225 +105,306 @@ export default function AddVehiclePage() {
       const data = await response.json();
 
       if (response.ok) {
-        setQrCode(data.qrCodeUrl);
-        // Don't redirect immediately, show QR code first
+        setQrCodeData(data.qrCode);
+        setCreatedVehicleId(data.id);
+
+        // Limpiar formulario
+        setFormData(INITIAL_FORM_DATA);
+
+        toast.success('¡Vehículo agregado exitosamente!', {
+          description: `${formData.brand} ${formData.model} - ${formData.licensePlate}`,
+          duration: 4000,
+        });
       } else {
-        setError(data.error);
+        const errorMessage = data.error || 'Error al agregar el vehículo';
+        setError(errorMessage);
+        toast.error('Error al agregar vehículo', {
+          description: errorMessage,
+          duration: 5000,
+        });
       }
     } catch (error) {
-      setError('Error al registrar vehículo');
+      const errorMessage = 'Error de conexión al agregar vehículo';
+      setError(errorMessage);
+      toast.error('Error de conexión', {
+        description: 'No se pudo conectar con el servidor',
+        duration: 5000,
+      });
+      console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleDownloadQR = async () => {
+    try {
+      const link = document.createElement('a');
+      link.href = qrCodeData!;
+      link.download = `qr-${formData.brand}-${formData.model}-${formData.licensePlate}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Código QR descargado', {
+        description: 'El archivo se ha guardado en tu carpeta de descargas',
+      });
+    } catch (error) {
+      toast.error('Error al descargar', {
+        description: 'No se pudo descargar el código QR',
+      });
+    }
   };
 
-  if (qrCode) {
+  const handleCopyQR = async () => {
+    try {
+      await navigator.clipboard.writeText(qrCodeData!);
+      toast.success('URL copiada al portapapeles', {
+        description: 'Puedes pegar la URL del código QR donde necesites',
+      });
+    } catch (error) {
+      toast.error('Error al copiar', {
+        description: 'No se pudo copiar la URL al portapapeles',
+      });
+    }
+  };
+
+  const handleAddAnother = () => {
+    setQrCodeData(null);
+    setCreatedVehicleId(null);
+    setFormData(INITIAL_FORM_DATA);
+    setError('');
+    toast.info('Listo para agregar otro vehículo');
+  };
+
+  if (qrCodeData && createdVehicleId) {
     return (
-      <>
-        <div className="max-w-2xl mx-auto space-y-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold tracking-heading">¡Vehículo Registrado!</h1>
-            <p className="text-muted-foreground text-xs">
-              Tu vehículo ha sido registrado exitosamente
-            </p>
-          </div>
+      <div className="max-w-2xl mx-auto space-y-8 p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="h-6 w-6 text-green-600" />
+              ¡Vehículo Agregado Exitosamente!
+            </CardTitle>
+            <CardDescription>
+              Tu vehículo ha sido registrado en el sistema. Aquí tienes el código QR para acceso
+              rápido.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-6">
+            <div className="p-4 bg-white rounded-lg shadow-sm border">
+              <Image
+                src={qrCodeData}
+                alt={`Código QR para ${formData.brand} ${formData.model}`}
+                className="w-64 h-64"
+                width={256}
+                height={256}
+              />
+            </div>
 
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2">
-                <QrCode className="h-5 w-5" />
-                Código QR del Vehículo
-              </CardTitle>
-              <CardDescription>
-                Guarda este código QR para que los mecánicos puedan acceder al historial
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="flex justify-center">
-                <img
-                  src={qrCode || '/placeholder.svg'}
-                  alt="QR Code del vehículo"
-                  className="w-64 h-64 border rounded-lg"
-                />
-              </div>
-              <div className="space-y-2">
-                <Button
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = qrCode;
-                    link.download = `qr-${formData.licensePlate}.png`;
-                    link.click();
-                  }}
-                  className="w-full"
-                >
-                  Descargar Código QR
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push('/owner')}
-                  className="w-full bg-transparent"
-                >
-                  Ir al Dashboard
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="text-center space-y-2">
+              <h3 className="font-semibold text-lg">
+                {formData.brand} {formData.model} ({formData.year})
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Placa: {formData.licensePlate} • Color: {formData.color}
+              </p>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Vehículo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-muted-foreground">Marca:</span>
-                  <p className="font-medium">{formData.brand}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Modelo:</span>
-                  <p className="font-medium">{formData.model}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Año:</span>
-                  <p className="font-medium">{formData.year}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Color:</span>
-                  <p className="font-medium">{formData.color}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Placa:</span>
-                  <p className="font-medium">{formData.licensePlate}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">VIN:</span>
-                  <p className="font-medium">{formData.vin}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </>
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+              <Button
+                variant="outline"
+                onClick={handleDownloadQR}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Descargar QR
+              </Button>
+
+              <Button variant="outline" onClick={handleCopyQR} className="flex items-center gap-2">
+                <Copy className="h-4 w-4" />
+                Copiar URL
+              </Button>
+
+              <Button
+                onClick={() => router.push(`/dashboard/owner/vehicles/${createdVehicleId}`)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Ver Detalles
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={handleAddAnother}
+                className="flex items-center gap-2"
+              >
+                Agregar Otro Vehículo
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/dashboard/owner/vehicles')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Ir a Mis Vehículos
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-heading">Agregar Vehículo</h1>
-          <p className="text-muted-foreground text-xs">Registra un nuevo vehículo en tu cuenta</p>
+    <div className="max-w-2xl mx-auto space-y-8 p-4">
+      <div className="flex items-center space-x-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Agregar Nuevo Vehículo</h1>
+          <p className="text-sm text-muted-foreground">Registra un nuevo vehículo en tu cuenta</p>
         </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold tracking-heading">
-              Información del Vehículo
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Completa todos los campos para registrar tu vehículo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold tracking-tight">
+            Información del Vehículo
+          </CardTitle>
+          <CardDescription className="text-sm">
+            Completa todos los campos para registrar tu vehículo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="brand">Marca</Label>
-                  <Input
-                    id="brand"
-                    className="text-xs"
-                    value={formData.brand}
-                    onChange={e => handleInputChange('brand', e.target.value)}
-                    required
-                    placeholder="Toyota, Honda, etc."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="model">Modelo</Label>
-                  <Input
-                    id="model"
-                    className="text-xs"
-                    value={formData.model}
-                    onChange={e => handleInputChange('model', e.target.value)}
-                    required
-                    placeholder="Corolla, Civic, etc."
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="year">Año</Label>
-                  <Input
-                    id="year"
-                    className="text-xs"
-                    type="number"
-                    min="1900"
-                    max={new Date().getFullYear() + 1}
-                    value={formData.year}
-                    onChange={e => handleInputChange('year', e.target.value)}
-                    required
-                    placeholder="2020"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
-                  <Input
-                    id="color"
-                    className="text-xs"
-                    value={formData.color}
-                    onChange={e => handleInputChange('color', e.target.value)}
-                    required
-                    placeholder="Blanco, Negro, etc."
-                  />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="licensePlate">Placa</Label>
+                <Label htmlFor="brand">Marca *</Label>
                 <Input
-                  id="licensePlate"
-                  className="text-xs"
-                  value={formData.licensePlate}
-                  onChange={e => handleInputChange('licensePlate', e.target.value.toUpperCase())}
+                  id="brand"
+                  value={formData.brand}
+                  onChange={e => handleInputChange('brand', e.target.value)}
                   required
-                  placeholder="ABC123"
+                  placeholder="Ej: Toyota, Honda, Chevrolet"
+                  className="focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="vin">VIN (Número de Identificación Vehicular)</Label>
+                <Label htmlFor="model">Modelo *</Label>
+                <Input
+                  id="model"
+                  value={formData.model}
+                  onChange={e => handleInputChange('model', e.target.value)}
+                  required
+                  placeholder="Ej: Corolla, Civic, Spark"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="year">Año *</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  min="1900"
+                  max={new Date().getFullYear() + 1}
+                  value={formData.year}
+                  onChange={e => handleInputChange('year', e.target.value)}
+                  required
+                  placeholder="Ej: 2020"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="color">Color *</Label>
+                <Input
+                  id="color"
+                  value={formData.color}
+                  onChange={e => handleInputChange('color', e.target.value)}
+                  required
+                  placeholder="Ej: Blanco, Negro, Azul"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="licensePlate">Placa *</Label>
+                <Input
+                  id="licensePlate"
+                  value={formData.licensePlate}
+                  onChange={e => handleInputChange('licensePlate', e.target.value.toUpperCase())}
+                  required
+                  placeholder="Ej: ABC123"
+                  maxLength={8}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-1">
+                <Label htmlFor="vin">VIN (Número de Identificación) *</Label>
                 <Input
                   id="vin"
-                  className="text-xs"
                   value={formData.vin}
                   onChange={e => handleInputChange('vin', e.target.value.toUpperCase())}
                   required
                   placeholder="1HGBH41JXMN109186"
                   maxLength={17}
                 />
-                <p className="text-xs text-muted-foreground">17 caracteres alfanuméricos</p>
+                <p className="text-xs text-muted-foreground">
+                  Debe contener exactamente 17 caracteres alfanuméricos
+                </p>
               </div>
+            </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Registrando...' : 'Registrar Vehículo'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+            <div className="flex justify-end pt-6 border-t">
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  disabled={isLoading}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isLoading} className="min-w-[140px]">
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Agregando...
+                    </>
+                  ) : (
+                    'Agregar Vehículo'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

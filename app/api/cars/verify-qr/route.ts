@@ -1,7 +1,8 @@
+// app/api/cars/verify-qr/route.ts
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getCarByQR } from '@/lib/database';
+import { prisma } from '@/lib/prisma';
 import { parseCarQR } from '@/lib/qr-generator';
 
 export async function POST(request: NextRequest) {
@@ -22,8 +23,43 @@ export async function POST(request: NextRequest) {
     try {
       const qrData = parseCarQR(qrCode);
 
-      // Find car by QR code
-      const car = await getCarByQR(qrData.carId);
+      // Find car by ID (not by QR code string, but by the carId in the QR data)
+      const car = await prisma.car.findUnique({
+        where: { id: qrData.carId },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+          maintenanceLogs: {
+            include: {
+              mechanic: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              usedParts: {
+                include: {
+                  part: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+          documents: {
+            orderBy: {
+              uploadedAt: 'desc',
+            },
+          },
+        },
+      });
 
       if (!car) {
         return NextResponse.json({ error: 'Vehículo no encontrado' }, { status: 404 });

@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Car, ArrowRight, CarFront } from 'lucide-react';
+import { Car, CarFront } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -17,13 +17,13 @@ export default function HomePage() {
     if (session) {
       switch (session.user.role) {
         case 'ADMIN':
-          router.push('/admin');
+          router.push('/dashboard/admin');
           break;
         case 'MECHANIC':
-          router.push('/mechanic');
+          router.push('/dashboard/mechanic');
           break;
         case 'OWNER':
-          router.push('/owner');
+          router.push('/dashboard/owner');
           break;
         default:
           break;
