@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import {
   Wrench,
   FileText,
@@ -14,12 +14,22 @@ import {
   Calendar,
   DollarSign,
   User,
-  MessageSquare,
   Download,
+  Copy,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { LoadingPage } from '@/components/ui/loading';
+
+// Importar QRCode de forma dinámica para evitar problemas de SSR
+const QRCode = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG), {
+  ssr: false,
+  loading: () => (
+    <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+      <QrCodeIcon className="h-12 w-12 text-gray-400" />
+    </div>
+  ),
+});
 
 interface MaintenanceLog {
   id: string;
@@ -69,7 +79,6 @@ interface CarData {
 }
 
 export default function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap params using React.use()
   const resolvedParams = use(params);
   const vehicleId = resolvedParams.id;
 
@@ -79,25 +88,6 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Helper function to validate and format QR code URL
-  const getValidQrCodeUrl = (qrCode: string | null): string | null => {
-    if (!qrCode) return null;
-
-    // Check if it's already a valid URL
-    try {
-      new URL(qrCode);
-      return qrCode;
-    } catch {
-      // If it's not a valid URL, check if it looks like a relative path
-      if (qrCode.startsWith('/')) {
-        return qrCode;
-      }
-      // If it's just an ID or invalid format, return null
-      return null;
-    }
-  };
-
-  // Function to get status badge variant
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -111,7 +101,6 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
     }
   };
 
-  // Function to translate status
   const translateStatus = (status: string) => {
     const translations: { [key: string]: string } = {
       COMPLETED: 'COMPLETADO',
@@ -120,6 +109,69 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
       CANCELLED: 'CANCELADO',
     };
     return translations[status] || status;
+  };
+
+  // Función para descargar QR como imagen
+  const downloadQRCode = () => {
+    if (!car?.qrCode) {
+      toast.error('No hay código QR disponible');
+      return;
+    }
+
+    // Crear un canvas temporal para generar la imagen
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = 300;
+    canvas.height = 300;
+
+    // Buscar el SVG del QR en el DOM
+    const qrElement = document.querySelector('#qr-code-display svg');
+    if (qrElement) {
+      const svgData = new XMLSerializer().serializeToString(qrElement);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(blob => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `qr-${car.brand}-${car.model}-${car.licensePlate}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            toast.success('Código QR descargado');
+          }
+        });
+
+        URL.revokeObjectURL(svgUrl);
+      };
+      img.src = svgUrl;
+    }
+  };
+
+  // Función para copiar el token QR
+  const copyQRToken = async () => {
+    if (!car?.qrCode) {
+      toast.error('No hay código QR disponible');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(car.qrCode);
+      toast.success('Token QR copiado al portapapeles');
+    } catch (error) {
+      toast.error('Error al copiar el token');
+    }
   };
 
   useEffect(() => {
@@ -195,8 +247,6 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
     .filter(log => log.invoice)
     .reduce((sum, log) => sum + (log.invoice?.totalCost || 0), 0);
 
-  const validQrCodeUrl = getValidQrCodeUrl(car.qrCode);
-
   return (
     <div className="space-y-8">
       {/* QR Code Section */}
@@ -212,37 +262,37 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                   Escanea este código para acceder rápidamente a la información del vehículo
                 </CardDescription>
               </div>
-              {validQrCodeUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = validQrCodeUrl;
-                    link.download = `qr-${car.brand}-${car.model}-${car.licensePlate}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                >
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={copyQRToken}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copiar Token
+                </Button>
+                <Button variant="outline" size="sm" onClick={downloadQRCode}>
                   <Download className="h-4 w-4 mr-2" />
                   Descargar
                 </Button>
-              )}
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="flex justify-center p-6">
-            {validQrCodeUrl ? (
-              <div className="p-4 bg-white rounded-lg">
-                <Image
-                  src={validQrCodeUrl}
-                  alt={`Código QR para ${car.brand} ${car.model}`}
-                  width={192}
-                  height={192}
-                  className="w-48 h-48 object-contain"
-                  priority
-                />
-              </div>
+          <CardContent className="flex flex-col items-center p-6">
+            {car.qrCode ? (
+              <>
+                <div id="qr-code-display" className="p-4 bg-white rounded-lg border mb-4">
+                  <QRCode
+                    value={car.qrCode}
+                    size={192}
+                    level="M"
+                    includeMargin={true}
+                    className="w-48 h-48"
+                  />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-sm font-medium">Token: {car.qrCode}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Este token identifica únicamente tu vehículo
+                  </p>
+                </div>
+              </>
             ) : (
               <div className="text-center p-8">
                 <QrCodeIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
@@ -324,142 +374,133 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
         </CardContent>
       </Card>
 
-      {/* Maintenance & Documents */}
+      {/* Maintenance & Documents - Rest of the component remains the same */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold tracking-heading">
-                Historial de Mantenimiento
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Registros recientes de mantenimiento y servicio
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {car.maintenanceLogs.length > 0 ? (
-                <div className="space-y-4">
-                  {car.maintenanceLogs.map(log => (
-                    <div
-                      key={log.id}
-                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                        <div>
-                          <h4 className="font-medium">{log.description}</h4>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
-                            <div className="flex items-center">
-                              <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                              {new Date(log.startDate).toLocaleDateString('es-ES')}
-                            </div>
-                            {log.mechanic?.name && (
-                              <div className="flex items-center">
-                                <User className="h-3.5 w-3.5 mr-1.5" />
-                                {log.mechanic.name}
-                              </div>
-                            )}
-                            {log.invoice && (
-                              <div className="flex items-center">
-                                <DollarSign className="h-3.5 w-3.5 mr-1.5" />$
-                                {log.invoice.totalCost.toFixed(2)}
-                              </div>
-                            )}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold tracking-heading">
+              Historial de Mantenimiento
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Registros recientes de mantenimiento y servicio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {car.maintenanceLogs.length > 0 ? (
+              <div className="space-y-4">
+                {car.maintenanceLogs.map(log => (
+                  <div
+                    key={log.id}
+                    className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div>
+                        <h4 className="font-medium">{log.description}</h4>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
+                          <div className="flex items-center">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            {new Date(log.startDate).toLocaleDateString('es-ES')}
                           </div>
-
-                          {log.usedParts.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs font-medium text-muted-foreground">
-                                Repuestos Utilizados:
-                              </p>
-                              <ul className="text-xs space-y-1 mt-1">
-                                {log.usedParts.map((part, index) => (
-                                  <li key={index} className="flex items-center">
-                                    <span className="text-muted-foreground">•</span>
-                                    <span className="ml-2">
-                                      {part.quantity}x {part.part.name}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
+                          {log.mechanic?.name && (
+                            <div className="flex items-center">
+                              <User className="h-3.5 w-3.5 mr-1.5" />
+                              {log.mechanic.name}
+                            </div>
+                          )}
+                          {log.invoice && (
+                            <div className="flex items-center">
+                              <DollarSign className="h-3.5 w-3.5 mr-1.5" />$
+                              {log.invoice.totalCost.toFixed(2)}
                             </div>
                           )}
                         </div>
-                        <Badge
-                          variant={getStatusVariant(log.status)}
-                          className="self-start sm:self-center"
-                        >
-                          {translateStatus(log.status)}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Wrench className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground">
-                    No se encontraron registros de mantenimiento
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    Agregar Registro de Mantenimiento
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold tracking-heading">Documentos</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Documentos y registros del vehículo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {car.documents.length > 0 ? (
-                <div className="space-y-2">
-                  {car.documents.map(doc => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{doc.name}</p>
-                          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                            <span>{new Date(doc.uploadedAt).toLocaleDateString('es-ES')}</span>
-                            {doc.docType && <span>• {doc.docType}</span>}
+                        {log.usedParts.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Repuestos Utilizados:
+                            </p>
+                            <ul className="text-xs space-y-1 mt-1">
+                              {log.usedParts.map((part, index) => (
+                                <li key={index} className="flex items-center">
+                                  <span className="text-muted-foreground">•</span>
+                                  <span className="ml-2">
+                                    {part.quantity}x {part.part.name}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
+                        )}
+                      </div>
+                      <Badge
+                        variant={getStatusVariant(log.status)}
+                        className="self-start sm:self-center"
+                      >
+                        {translateStatus(log.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center h-32 flex items-center justify-center">
+                <p className="text-xs text-muted-foreground">
+                  No se encontraron registros de mantenimiento
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold tracking-heading">Documentos</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Documentos y registros del vehículo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {car.documents.length > 0 ? (
+              <div className="space-y-2">
+                {car.documents.map(doc => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{doc.name}</p>
+                        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                          <span>{new Date(doc.uploadedAt).toLocaleDateString('es-ES')}</span>
+                          {doc.docType && <span>• {doc.docType}</span>}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <a
-                          href={doc.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/90"
-                        >
-                          Ver
-                        </a>
-                      </Button>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground">No hay documentos cargados</p>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    Subir Documento
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    <Button variant="ghost" size="sm" asChild>
+                      <a
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/90"
+                      >
+                        Ver
+                      </a>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center h-32 flex flex-col   items-center justify-center">
+                <p className="text-xs text-muted-foreground">No hay documentos cargados</p>
+                <Button variant="outline" size="sm" className="mt-4">
+                  Subir Documento
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

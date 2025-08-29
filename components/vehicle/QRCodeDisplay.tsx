@@ -11,7 +11,7 @@ interface QRCodeDisplayProps {
 export function QRCodeDisplay({ qrCode, vehicleName, className = '' }: QRCodeDisplayProps) {
   const handleDownload = () => {
     if (!qrCode) return;
-    
+
     const link = document.createElement('a');
     link.href = qrCode;
     link.download = `qr-${vehicleName.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.png`;

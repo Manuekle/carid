@@ -1,3 +1,4 @@
+// app/api/cars/create/route.ts
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -33,48 +34,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create car
+    // Create car with initial QR code
     const car = await prisma.car.create({
       data: {
         vin,
         brand,
         model,
-        year,
+        year: parseInt(year),
         color,
         licensePlate,
-        ownerId: session.user.id,
-        qrCode: `CAR_${vin}_${Date.now()}`, // Temporary QR code
+        owner: { connect: { id: session.user.id } },
+        qrCode: `temp_${Date.now()}`, // Temporary value
       },
     });
 
-    // Generate QR code
-    const qrCodeUrl = await generateCarQR(car.id, car.vin);
+    // Generate QR token using the actual car ID
+    const qrToken = generateCarQR(car.id, car.vin);
 
-    // Update car with proper QR code
-    await prisma.car.update({
+    // Update car with the final QR token
+    const updatedCar = await prisma.car.update({
       where: { id: car.id },
       data: {
-        qrCode: JSON.stringify({
-          type: 'CAR_ID',
-          carId: car.id,
-          vin: car.vin,
-          timestamp: new Date().toISOString(),
-        }),
+        qrCode: qrToken,
       },
     });
 
     return NextResponse.json({
       message: 'Vehículo registrado exitosamente',
       car: {
-        id: car.id,
-        vin: car.vin,
-        brand: car.brand,
-        model: car.model,
-        year: car.year,
-        color: car.color,
-        licensePlate: car.licensePlate,
+        id: updatedCar.id,
+        vin: updatedCar.vin,
+        brand: updatedCar.brand,
+        model: updatedCar.model,
+        year: updatedCar.year,
+        color: updatedCar.color,
+        licensePlate: updatedCar.licensePlate,
+        qrCode: updatedCar.qrCode, // Esto ahora es el token
       },
-      qrCodeUrl,
     });
   } catch (error) {
     console.error('Error creating car:', error);

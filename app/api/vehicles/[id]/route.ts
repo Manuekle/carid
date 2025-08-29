@@ -1,28 +1,35 @@
-import { NextResponse } from 'next/server';
+// app/api/vehicles/[id]/route.ts
+import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const vehicle = await prisma.car.findUnique({
-      where: {
-        id: params.id,
-        ownerId: session.user.id, // Ensure the user owns this vehicle
-      },
+    const car = await prisma.car.findUnique({
+      where: { id },
       include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
         maintenanceLogs: {
           include: {
             mechanic: {
@@ -33,16 +40,13 @@ export async function GET(
             },
             usedParts: {
               include: {
-                part: {
-                  select: {
-                    name: true,
-                  },
-                },
+                part: true,
               },
             },
+            invoice: true,
           },
           orderBy: {
-            startDate: 'desc',
+            createdAt: 'desc',
           },
         },
         documents: {
@@ -53,19 +57,18 @@ export async function GET(
       },
     });
 
-    if (!vehicle) {
-      return NextResponse.json(
-        { error: 'Vehicle not found' },
-        { status: 404 }
-      );
+    if (!car) {
+      return NextResponse.json({ error: 'Vehículo no encontrado' }, { status: 404 });
     }
 
-    return NextResponse.json(vehicle);
+    // Check permissions
+    if (session.user.role === 'OWNER' && car.ownerId !== session.user.id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+
+    return NextResponse.json(car);
   } catch (error) {
-    console.error('Error fetching vehicle:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Error fetching car:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

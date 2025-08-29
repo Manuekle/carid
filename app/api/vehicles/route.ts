@@ -8,28 +8,19 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { vin, licensePlate, brand, model, year, color } = await request.json();
 
     // Validate input
     if (!vin || !licensePlate || !brand || !model || !year || !color) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Check if user is an owner
     if (session.user.role !== 'OWNER') {
-      return NextResponse.json(
-        { error: 'Only vehicle owners can add cars' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only vehicle owners can add cars' }, { status: 403 });
     }
 
     // Check if VIN already exists
@@ -38,10 +29,7 @@ export async function POST(request: Request) {
     });
 
     if (existingCar) {
-      return NextResponse.json(
-        { error: 'A car with this VIN already exists' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'A car with this VIN already exists' }, { status: 400 });
     }
 
     // Generate QR code with the car's ID and VIN
@@ -75,9 +63,6 @@ export async function POST(request: Request) {
     return NextResponse.json(updatedCar, { status: 201 });
   } catch (error) {
     console.error('Error creating vehicle:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

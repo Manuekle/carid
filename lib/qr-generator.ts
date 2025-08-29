@@ -1,76 +1,116 @@
-import QRCode from 'qrcode';
-import { prisma } from './prisma';
+// lib/qr-generator.ts
+import crypto from 'crypto';
 
-export async function generateCarQR(carId: string, vin: string): Promise<string> {
-  const qrData = {
+interface QRCarData {
+  type: 'CAR_ID';
+  carId: string;
+  vin: string;
+  timestamp: string;
+}
+
+/**
+ * Genera un token único para el QR del vehículo
+ * @param carId ID del vehículo
+ * @param vin VIN del vehículo
+ * @returns Token único para el QR
+ */
+export function generateCarQR(carId: string, vin: string): string {
+  const qrData: QRCarData = {
     type: 'CAR_ID',
     carId,
     vin,
     timestamp: new Date().toISOString(),
   };
 
-  const qrString = JSON.stringify(qrData);
+  // Crear un token único basado en los datos del vehículo
+  const dataString = JSON.stringify(qrData);
+  const hash = crypto.createHash('sha256').update(dataString).digest('hex');
 
+  // Crear un token más corto y legible
+  const shortToken = hash.substring(0, 16).toUpperCase();
+
+  // Combinar con el ID del carro para hacer un token único
+  const qrToken = `CAR_${carId.substring(0, 8)}_${shortToken}`;
+
+  return qrToken;
+}
+
+/**
+ * Parsea y valida un código QR de vehículo
+ * @param qrCode Token del código QR
+ * @returns Datos del vehículo extraídos del QR
+ */
+export function parseCarQR(qrCode: string): QRCarData {
   try {
-    const qrCodeDataURL = await QRCode.toDataURL(qrString, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
-    });
+    // Si es nuestro formato de token
+    if (qrCode.startsWith('CAR_')) {
+      // Extraer el ID del vehículo del token
+      const parts = qrCode.split('_');
+      if (parts.length >= 3) {
+        const carIdPart = parts[1];
 
-    return qrCodeDataURL;
+        // El formato del token contiene información básica
+        // Para obtener datos completos, necesitaremos consultar la base de datos
+        return {
+          type: 'CAR_ID',
+          carId: carIdPart, // Esto será un fragmento, necesitaremos buscar en BD
+          vin: '', // Se llenará desde la BD
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
+    // Intentar parsear como JSON (formato anterior)
+    const parsed = JSON.parse(qrCode);
+
+    if (parsed.type !== 'CAR_ID' || !parsed.carId || !parsed.vin) {
+      throw new Error('Formato de QR inválido');
+    }
+
+    return parsed;
   } catch (error) {
-    console.error('Error generating QR code:', error);
-    throw new Error('Failed to generate QR code');
+    throw new Error('Código QR inválido o formato no reconocido');
   }
 }
 
-export function parseCarQR(qrString: string) {
-  try {
-    // Asegurarnos de que sea JSON
-    const qrData = JSON.parse(qrString);
-
-    if (qrData.type !== 'CAR_ID') {
-      throw new Error('Invalid QR code type');
-    }
-
-    return {
-      carId: qrData.carId,
-      vin: qrData.vin,
-      timestamp: qrData.timestamp,
-    };
-  } catch (error) {
-    console.error('Error parsing QR code:', error);
-
-    // Si no es JSON, avisamos en vez de romper
-    if (
-      typeof qrString === 'string' &&
-      (qrString.startsWith('http://') || qrString.startsWith('https://'))
-    ) {
-      throw new Error('QR code contains a URL, not a CAR_ID');
-    }
-
-    throw new Error('Invalid QR code format');
+/**
+ * Valida si un token de QR es válido
+ * @param qrToken Token a validar
+ * @returns boolean indicando si es válido
+ */
+export function isValidQRToken(qrToken: string): boolean {
+  // Validar formato básico
+  if (!qrToken || typeof qrToken !== 'string') {
+    return false;
   }
+
+  // Validar que comience con CAR_
+  if (!qrToken.startsWith('CAR_')) {
+    return false;
+  }
+
+  // Validar longitud mínima
+  if (qrToken.length < 10) {
+    return false;
+  }
+
+  return true;
 }
 
-export async function generateQRCode(carId: string): Promise<string> {
-  try {
-    const car = await prisma.car.findUnique({
-      where: { id: carId },
-      select: { vin: true },
-    });
-
-    if (!car) {
-      throw new Error('Car not found');
-    }
-
-    return await generateCarQR(carId, car.vin);
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-    throw new Error('Failed to generate QR code');
+/**
+ * Extrae el ID del vehículo de un token QR (fragmento para búsqueda)
+ * @param qrToken Token del QR
+ * @returns Fragmento del ID del vehículo para búsqueda
+ */
+export function extractCarIdFragment(qrToken: string): string | null {
+  if (!isValidQRToken(qrToken)) {
+    return null;
   }
+
+  const parts = qrToken.split('_');
+  if (parts.length >= 2) {
+    return parts[1];
+  }
+
+  return null;
 }

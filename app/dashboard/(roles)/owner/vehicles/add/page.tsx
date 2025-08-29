@@ -3,6 +3,23 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { QrCode, Download, Copy, Eye, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+
+// Importar QRCode de forma dinámica
+const QRCode = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG), {
+  ssr: false,
+  loading: () => (
+    <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+      <QrCode className="h-12 w-12 text-gray-400" />
+    </div>
+  ),
+});
 
 interface VehicleFormData {
   vin: string;
@@ -12,13 +29,17 @@ interface VehicleFormData {
   color: string;
   licensePlate: string;
 }
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { QrCode, Download, Copy, Eye, ArrowLeft } from 'lucide-react';
-import Image from 'next/image';
-import { toast } from 'sonner';
+
+interface CreatedVehicleData {
+  id: string;
+  vin: string;
+  brand: string;
+  model: string;
+  year: number;
+  color: string;
+  licensePlate: string;
+  qrCode: string;
+}
 
 const INITIAL_FORM_DATA: VehicleFormData = {
   vin: '',
@@ -33,8 +54,7 @@ export default function AddVehiclePage() {
   const [formData, setFormData] = useState<VehicleFormData>(INITIAL_FORM_DATA);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
-  const [createdVehicleId, setCreatedVehicleId] = useState<string | null>(null);
+  const [createdVehicle, setCreatedVehicle] = useState<CreatedVehicleData | null>(null);
   const router = useRouter();
 
   const handleInputChange = (field: string, value: string) => {
@@ -43,7 +63,6 @@ export default function AddVehiclePage() {
       [field]: value,
     }));
 
-    // Limpiar error cuando el usuario empiece a escribir
     if (error) {
       setError('');
     }
@@ -105,10 +124,7 @@ export default function AddVehiclePage() {
       const data = await response.json();
 
       if (response.ok) {
-        setQrCodeData(data.qrCode);
-        setCreatedVehicleId(data.id);
-
-        // Limpiar formulario
+        setCreatedVehicle(data.car);
         setFormData(INITIAL_FORM_DATA);
 
         toast.success('¡Vehículo agregado exitosamente!', {
@@ -137,17 +153,48 @@ export default function AddVehiclePage() {
   };
 
   const handleDownloadQR = async () => {
-    try {
-      const link = document.createElement('a');
-      link.href = qrCodeData!;
-      link.download = `qr-${formData.brand}-${formData.model}-${formData.licensePlate}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (!createdVehicle?.qrCode) return;
 
-      toast.success('Código QR descargado', {
-        description: 'El archivo se ha guardado en tu carpeta de descargas',
-      });
+    try {
+      // Crear un canvas temporal para generar la imagen
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = 300;
+      canvas.height = 300;
+
+      // Buscar el SVG del QR en el DOM
+      const qrElement = document.querySelector('#success-qr-code svg');
+      if (qrElement) {
+        const svgData = new XMLSerializer().serializeToString(qrElement);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          canvas.toBlob(blob => {
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `qr-${createdVehicle.brand}-${createdVehicle.model}-${createdVehicle.licensePlate}.png`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              toast.success('Código QR descargado');
+            }
+          });
+
+          URL.revokeObjectURL(svgUrl);
+        };
+        img.src = svgUrl;
+      }
     } catch (error) {
       toast.error('Error al descargar', {
         description: 'No se pudo descargar el código QR',
@@ -156,33 +203,34 @@ export default function AddVehiclePage() {
   };
 
   const handleCopyQR = async () => {
+    if (!createdVehicle?.qrCode) return;
+
     try {
-      await navigator.clipboard.writeText(qrCodeData!);
-      toast.success('URL copiada al portapapeles', {
-        description: 'Puedes pegar la URL del código QR donde necesites',
+      await navigator.clipboard.writeText(createdVehicle.qrCode);
+      toast.success('Token QR copiado al portapapeles', {
+        description: 'Puedes usar este token para identificar el vehículo',
       });
     } catch (error) {
       toast.error('Error al copiar', {
-        description: 'No se pudo copiar la URL al portapapeles',
+        description: 'No se pudo copiar el token al portapapeles',
       });
     }
   };
 
   const handleAddAnother = () => {
-    setQrCodeData(null);
-    setCreatedVehicleId(null);
+    setCreatedVehicle(null);
     setFormData(INITIAL_FORM_DATA);
     setError('');
     toast.info('Listo para agregar otro vehículo');
   };
 
-  if (qrCodeData && createdVehicleId) {
+  // Mostrar página de éxito con QR
+  if (createdVehicle) {
     return (
       <div className="max-w-2xl mx-auto space-y-8 p-4">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-6 w-6 text-green-600" />
+            <CardTitle className="flex items-center gap-2 text-2xl font-semibold tracking-heading">
               ¡Vehículo Agregado Exitosamente!
             </CardTitle>
             <CardDescription>
@@ -191,22 +239,19 @@ export default function AddVehiclePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
-              <Image
-                src={qrCodeData}
-                alt={`Código QR para ${formData.brand} ${formData.model}`}
-                className="w-64 h-64"
-                width={256}
-                height={256}
-              />
+            <div id="success-qr-code" className="p-4 bg-white rounded-lg shadow-sm border">
+              <QRCode value={createdVehicle.qrCode} size={256} level="M" includeMargin={true} />
             </div>
 
             <div className="text-center space-y-2">
-              <h3 className="font-semibold text-lg">
-                {formData.brand} {formData.model} ({formData.year})
+              <h3 className="font-semibold text-lg tracking-card">
+                {createdVehicle.brand} {createdVehicle.model} ({createdVehicle.year})
               </h3>
               <p className="text-sm text-muted-foreground">
-                Placa: {formData.licensePlate} • Color: {formData.color}
+                Placa: {createdVehicle.licensePlate} • Color: {createdVehicle.color}
+              </p>
+              <p className="text-xs text-muted-foreground font-mono bg-gray-100 p-2 rounded">
+                Token: {createdVehicle.qrCode}
               </p>
             </div>
 
@@ -222,11 +267,11 @@ export default function AddVehiclePage() {
 
               <Button variant="outline" onClick={handleCopyQR} className="flex items-center gap-2">
                 <Copy className="h-4 w-4" />
-                Copiar URL
+                Copiar Token
               </Button>
 
               <Button
-                onClick={() => router.push(`/dashboard/owner/vehicles/${createdVehicleId}`)}
+                onClick={() => router.push(`/dashboard/owner/vehicles/${createdVehicle.id}`)}
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
@@ -236,20 +281,11 @@ export default function AddVehiclePage() {
 
             <div className="flex flex-col sm:flex-row gap-3 w-full justify-center pt-4 border-t">
               <Button
-                variant="outline"
-                onClick={handleAddAnother}
-                className="flex items-center gap-2"
-              >
-                Agregar Otro Vehículo
-              </Button>
-
-              <Button
-                variant="ghost"
+                variant="default"
                 onClick={() => router.push('/dashboard/owner/vehicles')}
                 className="flex items-center gap-2"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Ir a Mis Vehículos
+                volver
               </Button>
             </div>
           </CardContent>
@@ -258,6 +294,7 @@ export default function AddVehiclePage() {
     );
   }
 
+  // Mostrar formulario
   return (
     <div className="max-w-2xl mx-auto space-y-8 p-4">
       <div className="flex items-center space-x-2">
