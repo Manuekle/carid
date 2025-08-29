@@ -105,7 +105,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
 
   return (
     <Card className="h-[600px] flex flex-col">
-      <CardHeader className="flex-shrink-0">
+      <CardHeader className="flex-shrink-0 border-b">
         <CardTitle className="flex items-center gap-3">
           <Avatar className="h-8 w-8 border border-zinc-200 text-xs">
             <AvatarFallback>{getUserInitials(otherUser.name)}</AvatarFallback>
@@ -130,7 +130,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
                   className={cn('flex gap-3', isCurrentUser ? 'justify-end' : 'justify-start')}
                 >
                   {!isCurrentUser && (
-                    <Avatar className="h-8 w-8 flex-shrink-0">
+                    <Avatar className="h-8 w-8 flex-shrink-0 text-xs font-medium">
                       <AvatarFallback>{getUserInitials(message.senderName)}</AvatarFallback>
                     </Avatar>
                   )}
@@ -145,7 +145,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
                     <p
                       className={cn(
                         'text-xs mt-1',
-                        isCurrentUser ? 'text-white' : 'text-muted-foreground'
+                        isCurrentUser ? 'text-zinc-300' : 'text-muted-foreground'
                       )}
                     >
                       {new Date(message.sentAt).toLocaleTimeString()}
@@ -153,7 +153,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
                   </div>
 
                   {isCurrentUser && (
-                    <Avatar className="h-8 w-8 flex-shrink-0">
+                    <Avatar className="h-8 w-8 flex-shrink-0 text-xs font-medium">
                       <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
@@ -171,7 +171,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
         </div>
 
         {/* Message Input */}
-        <div className="border-t p-4">
+        <div className="border-t px-4 pt-5">
           <form onSubmit={sendMessage} className="flex gap-2">
             <Input
               value={newMessage}

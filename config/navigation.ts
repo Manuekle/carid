@@ -1,7 +1,6 @@
 import type { NavLinkGroup } from '@/types/navigation';
 import {
   Car,
-  BarChart3,
   Users,
   Wrench,
   Package,
@@ -9,6 +8,7 @@ import {
   MessageSquare,
   QrCode,
   Settings,
+  Home,
 } from 'lucide-react';
 
 export const navLinkGroups: NavLinkGroup[] = [
@@ -19,7 +19,7 @@ export const navLinkGroups: NavLinkGroup[] = [
     links: [
       {
         href: '/dashboard/admin',
-        icon: BarChart3,
+        icon: Home,
         label: 'Inicio',
         roles: ['ADMIN'],
         description: 'Panel de control administrativo',
@@ -47,7 +47,7 @@ export const navLinkGroups: NavLinkGroup[] = [
     links: [
       {
         href: '/dashboard/mechanic',
-        icon: BarChart3,
+        icon: Home,
         label: 'Inicio',
         roles: ['MECHANIC'],
         description: 'Panel de control del mecánico',
