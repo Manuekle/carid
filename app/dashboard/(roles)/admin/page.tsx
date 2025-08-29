@@ -1,191 +1,203 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { DollarSign, Wrench, Users, Car, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DollarSign, Wrench, Users, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 import { LoadingPage } from '@/components/ui/loading';
+import { RevenueChart } from './components/revenue-chart';
 import { useSession } from 'next-auth/react';
 
-interface DailyStats {
-  completedMaintenances: number;
+type DashboardStats = {
+  dailyRevenue: number;
   totalRevenue: number;
-  adminShare: number;
-  mechanicShare: number;
-}
-
-interface PendingMechanic {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  createdAt: string;
-}
+  todayRepairs: number;
+  activeUsers: number;
+  registeredVehicles: number;
+  completedRepairs: number;
+  lowStockParts: number;
+  revenueData: {
+    labels: string[];
+    values: number[];
+  };
+};
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
-  const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
-  const [pendingMechanics, setPendingMechanics] = useState<PendingMechanic[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStats = async () => {
+      setIsLoading(true);
+      setError(null);
+
       try {
-        // Fetch daily stats
-        const statsResponse = await fetch('/api/admin/stats');
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setDailyStats(statsData.stats);
+        const response = await fetch(`/api/admin/stats?period=${selectedPeriod}`);
+        if (!response.ok) {
+          throw new Error('Error al cargar las estadísticas');
         }
 
-        // Fetch pending mechanics
-        const mechanicsResponse = await fetch('/api/mechanic/requests');
-        if (mechanicsResponse.ok) {
-          const mechanicsData = await mechanicsResponse.json();
-          setPendingMechanics(mechanicsData);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        const { stats: data } = await response.json();
+        setStats(data);
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError('No se pudieron cargar las estadísticas. Por favor, intente de nuevo.');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [session]);
+    fetchStats();
+  }, [selectedPeriod]);
 
-  if (loading) {
+  const chartData =
+    stats?.revenueData?.labels?.map((label, index) => ({
+      name: label,
+      Ingresos: stats.revenueData.values[index] || 0,
+    })) || [];
+
+  if (isLoading || !session) {
     return <LoadingPage />;
   }
 
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-card">Bienvenido, {session?.user.name}</h1>
-        <p className="text-muted-foreground text-xs">
-          Resumen de actividades y estadísticas del día
+  if (error || !stats) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-lg font-medium">Error al cargar el panel</p>
+        <p className="text-muted-foreground text-sm">
+          {error || 'No se pudieron cargar los datos'}
         </p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-heading">
+            Bienvenido, {session?.user?.name || 'Administrador'}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Resumen general de la operación del negocio
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant={selectedPeriod === 'week' ? 'default' : 'outline'}
+            onClick={() => setSelectedPeriod('week')}
+          >
+            Semana
+          </Button>
+          <Button
+            variant={selectedPeriod === 'month' ? 'default' : 'outline'}
+            onClick={() => setSelectedPeriod('month')}
+          >
+            Mes
+          </Button>
+          <Button
+            variant={selectedPeriod === 'year' ? 'default' : 'outline'}
+            onClick={() => setSelectedPeriod('year')}
+          >
+            Año
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium">Ingresos del Día</CardTitle>
+            <CardTitle className="text-sm font-medium">Ingresos del Día</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
-              ${dailyStats?.totalRevenue.toLocaleString() || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tu parte: ${dailyStats?.adminShare.toLocaleString() || 0} (40%)
-            </p>
+            <div className="text-2xl font-bold">{formatCurrency(stats.dailyRevenue)}</div>
+            <p className="text-xs text-muted-foreground">40% de las facturas del día</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium">Reparaciones Completadas</CardTitle>
+            <CardTitle className="text-sm font-medium">Reparaciones Hoy</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{dailyStats?.completedMaintenances || 0}</div>
-            <p className="text-xs text-muted-foreground">Trabajos finalizados hoy</p>
+            <div className="text-2xl font-bold">{stats.todayRepairs}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.todayRepairs > 0 ? 'En progreso' : 'Sin reparaciones hoy'}
+            </p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium">Mecánicos Pendientes</CardTitle>
+            <CardTitle className="text-sm font-medium">Usuarios Activos</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{pendingMechanics.length}</div>
-            <p className="text-xs text-muted-foreground">Esperando aprobación</p>
+            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.activeUsers > 0 ? 'Conectados recientemente' : 'Sin usuarios activos'}
+            </p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium">Ganancia Mecánicos</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Vehículos Registrados</CardTitle>
+            <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
-              ${dailyStats?.mechanicShare.toLocaleString() || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">60% de ingresos totales</p>
+            <div className="text-2xl font-bold">{stats.registeredVehicles}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.completedRepairs} reparaciones completadas
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Pending Mechanics */}
-      {pendingMechanics.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mecánicos Pendientes de Aprobación</CardTitle>
-            <CardDescription>
-              Revisa y aprueba las solicitudes de registro de mecánicos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingMechanics.map(mechanic => (
-                <div
-                  key={mechanic.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div>
-                    <h4 className="font-medium">{mechanic.name}</h4>
-                    <p className="text-xs text-muted-foreground">{mechanic.email}</p>
-                    <p className="text-xs text-muted-foreground">{mechanic.phone}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">Pendiente</Badge>
-                  </div>
-                </div>
-              ))}
+      {/* Revenue Chart */}
+      <div className="col-span-4">
+        <RevenueChart
+          title="Ingresos Acumulados"
+          description={
+            selectedPeriod === 'week'
+              ? 'Ingresos de los últimos 7 días'
+              : selectedPeriod === 'month'
+                ? 'Ingresos de este mes'
+                : 'Ingresos de este año'
+          }
+          data={chartData.map(item => ({
+            date: item.name,
+            revenue: item.Ingresos,
+          }))}
+        />
+      </div>
+
+      {/* Low Stock Alert */}
+      {stats.lowStockParts > 0 && (
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardContent className="p-4 flex items-center">
+            <AlertCircle className="h-5 w-5 text-destructive mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="font-medium">¡Atención! Repuestos con bajo inventario</h3>
+              <p className="text-sm text-muted-foreground">
+                Tienes {stats.lowStockParts} {stats.lowStockParts === 1 ? 'repuesto' : 'repuestos'}{' '}
+                con stock bajo.
+                <a href="/dashboard/admin/inventory" className="text-primary hover:underline ml-1">
+                  Revisar inventario
+                </a>
+              </p>
             </div>
           </CardContent>
         </Card>
       )}
-
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold tracking-heading">
-              Acciones Rápidas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-xs">
-              <p>• Gestionar inventario de repuestos</p>
-              <p>• Aprobar nuevos mecánicos</p>
-              <p>• Ver reportes detallados</p>
-              <p>• Configurar precios y comisiones</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold tracking-heading">
-              Resumen del Sistema
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-xs">
-              <p>• Sistema de códigos QR activo</p>
-              <p>• Inventario sincronizado</p>
-              <p>• Facturación automática</p>
-              <p>• Chat en tiempo real</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
