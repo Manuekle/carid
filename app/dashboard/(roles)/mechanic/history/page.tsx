@@ -162,7 +162,6 @@ export default function MechanicHistoryPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground text-xs">No tienes trabajos registrados aún</p>
             </div>
           )}

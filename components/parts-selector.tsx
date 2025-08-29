@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Search, Plus, Minus, Package } from 'lucide-react';
 import { LoadingPage } from './ui/loading';
+import Image from 'next/image';
 
 interface Part {
   id: string;
@@ -122,24 +123,26 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
       {selectedParts.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Repuestos Seleccionados</CardTitle>
-            <CardDescription>Total: ${getTotalCost().toLocaleString()}</CardDescription>
+            <CardTitle className="text-xs font-medium">Repuestos Seleccionados</CardTitle>
+            <CardDescription className="text-xs font-medium">
+              Total: ${getTotalCost().toLocaleString()}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {selectedParts.map(part => (
                 <div
                   key={part.id}
-                  className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                  className="flex items-center justify-between px-4 py-2 bg-muted rounded-lg"
                 >
                   <div>
-                    <span className="font-medium">{part.name}</span>
+                    <span className="font-medium text-xs">{part.name}</span>
                     <span className="text-xs text-muted-foreground ml-2">
                       ${part.price.toLocaleString()} x {part.quantity}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">
+                    <span className="font-medium text-xs">
                       ${(part.price * part.quantity).toLocaleString()}
                     </span>
                     <Button variant="ghost" size="sm" onClick={() => removePart(part.id)}>
@@ -154,7 +157,7 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
       )}
 
       {/* Parts Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-4">
         {filteredParts.map(part => {
           const selectedQuantity = getSelectedQuantity(part.id);
           const canAddMore = selectedQuantity < part.stock;
@@ -165,7 +168,7 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
                 <div className="flex gap-4">
                   {part.photoUrl && (
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
-                      <img
+                      <Image
                         src={part.photoUrl || '/placeholder.svg'}
                         alt={part.name}
                         className="w-full h-full object-cover"
@@ -178,14 +181,14 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{part.name}</h4>
+                    <h4 className="font-semibold text-xl tracking-card">{part.name}</h4>
                     {part.description && (
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {part.description}
                       </p>
                     )}
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-semibold">${part.price.toLocaleString()}</span>
+                      <span className="font-medium text-xs ">${part.price.toLocaleString()}</span>
                       <Badge variant={part.stock <= 10 ? 'destructive' : 'secondary'}>
                         {part.stock} disponibles
                       </Badge>
@@ -196,34 +199,28 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
                 <div className="flex items-center justify-between mt-4">
                   {selectedQuantity > 0 ? (
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removePart(part.id)}
-                        className="bg-transparent"
-                      >
+                      <Button variant="default" size="sm" onClick={() => removePart(part.id)}>
                         <Minus className="h-4 w-4" />
                       </Button>
-                      <span className="font-medium px-2">{selectedQuantity}</span>
+                      <span className="font-medium px-3 py-1 border border-gray-200 rounded-lg">
+                        {selectedQuantity}
+                      </span>
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         onClick={() => addPart(part)}
                         disabled={!canAddMore}
-                        className="bg-transparent"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                   ) : (
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={() => addPart(part)}
                       disabled={part.stock === 0}
-                      className="bg-transparent"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
                       Agregar
                     </Button>
                   )}

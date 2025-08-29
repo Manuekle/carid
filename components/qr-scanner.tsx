@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Camera, CameraOff, Type } from 'lucide-react';
 import QrScanner from 'qr-scanner';
-import { parseCarQR } from '@/lib/qr-generator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -42,14 +41,20 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
           videoRef.current,
           result => {
             try {
-              const parsed = parseCarQR(result.data);
-              onScan(parsed);
+              console.log('Raw QR Code Data:', result.data);
+              // Pass the raw data to onScan without parsing
+              onScan({
+                carId: result.data, // Pass the raw data as carId
+                vin: '',
+                timestamp: new Date().toISOString(),
+              });
               setError('');
               stopScanning();
             } catch (err) {
-              console.error(err);
-              setError('Formato de QR inválido');
-              onError?.('Formato de QR inválido');
+              console.error('Error processing QR code:', err);
+              console.log('Raw QR data that caused error:', result?.data);
+              setError('Error procesando el código QR');
+              onError?.('Error procesando el código QR');
             }
           },
           {
@@ -108,22 +113,23 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!manualToken.trim()) {
-      setError('Por favor ingresa un token válido');
-      return;
-    }
+    const rawInput = manualToken.trim();
+    if (!rawInput) return;
 
     try {
-      const parsed = parseCarQR(manualToken);
-      onScan(parsed);
-      setError('');
+      console.log('Manual QR Code Input:', rawInput);
+      onScan({
+        carId: rawInput, // Pass the raw input without modifications
+        vin: '',
+        timestamp: new Date().toISOString(),
+      });
       setManualToken('');
       setShowManualInput(false);
     } catch (err) {
-      console.error(err);
-      setError('Formato de token inválido');
-      onError?.('Formato de token inválido');
+      console.error('Error processing manual input:', err);
+      console.log('Input that caused error:', rawInput);
+      setError('Error procesando el código');
+      onError?.('Error procesando el código');
     }
   };
 

@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Wrench, Calculator } from 'lucide-react';
 import PartsSelector from '@/components/parts-selector';
 import { Car } from '@/types';
 import { LoadingPage } from '@/components/ui/loading';
@@ -153,7 +152,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
 
   return (
     <>
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold tracking-heading">Nueva Reparación</h1>
@@ -173,11 +172,12 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
           {/* Work Description */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wrench className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                 Descripción del Trabajo
               </CardTitle>
-              <CardDescription>Detalla el trabajo que se realizará en el vehículo</CardDescription>
+              <CardDescription className="text-xs text-muted-foreground">
+                Detalla el trabajo que se realizará en el vehículo
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -228,8 +228,10 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
           {/* Parts Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Selección de Repuestos</CardTitle>
-              <CardDescription>
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
+                Selección de Repuestos
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
                 Elige los repuestos que se utilizarán en la reparación
               </CardDescription>
             </CardHeader>
@@ -241,25 +243,24 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
           {/* Cost Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                 Resumen de Costos
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span>Costo de Repuestos:</span>
-                  <span className="font-medium">${getPartsCost().toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">Costo de Repuestos:</span>
+                  <span className="font-medium text-xs">${getPartsCost().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Mano de Obra:</span>
-                  <span className="font-medium">${getLaborCost().toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">Mano de Obra:</span>
+                  <span className="font-medium text-xs">${getLaborCost().toLocaleString()}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-semibold">
-                  <span>Total:</span>
-                  <span>${getTotalCost().toLocaleString()}</span>
+                  <span className="text-xs font-medium">Total:</span>
+                  <span className="text-xs font-medium">${getTotalCost().toLocaleString()}</span>
                 </div>
               </div>
 
@@ -268,11 +269,11 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
               <div className="space-y-2 text-xs text-muted-foreground">
                 <h4 className="font-medium text-foreground">Distribución de Ganancias:</h4>
                 <div className="flex justify-between">
-                  <span>Tu parte (60%):</span>
+                  <span className="text-xs text-muted-foreground">Tu parte (60%):</span>
                   <span className="font-medium">${getMechanicShare().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Administración (40%):</span>
+                  <span className="text-xs text-muted-foreground">Administración (40%):</span>
                   <span className="font-medium">${getAdminShare().toLocaleString()}</span>
                 </div>
               </div>

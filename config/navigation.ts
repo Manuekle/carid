@@ -9,7 +9,6 @@ import {
   MessageSquare,
   QrCode,
   Settings,
-  User,
 } from 'lucide-react';
 
 export const navLinkGroups: NavLinkGroup[] = [
@@ -21,7 +20,7 @@ export const navLinkGroups: NavLinkGroup[] = [
       {
         href: '/dashboard/admin',
         icon: BarChart3,
-        label: 'Dashboard',
+        label: 'Inicio',
         roles: ['ADMIN'],
         description: 'Panel de control administrativo',
       },
@@ -49,7 +48,7 @@ export const navLinkGroups: NavLinkGroup[] = [
       {
         href: '/dashboard/mechanic',
         icon: BarChart3,
-        label: 'Dashboard',
+        label: 'Inicio',
         roles: ['MECHANIC'],
         description: 'Panel de control del mecánico',
       },

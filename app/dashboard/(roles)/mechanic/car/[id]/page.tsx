@@ -80,10 +80,7 @@ export default async function CarPage({ params }: CarPageProps) {
             </p>
           </div>
           <Button asChild>
-            <Link href={`/mechanic/car/${car.id}/maintenance/new`}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Reparación
-            </Link>
+            <Link href={`/dashboard/mechanic/car/${car.id}/maintenance/new`}>Nueva Reparación</Link>
           </Button>
         </div>
 
@@ -91,60 +88,60 @@ export default async function CarPage({ params }: CarPageProps) {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
                 <Car className="h-5 w-5" />
                 Información del Vehículo
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Marca:</span>
-                <span className="font-medium">{car.brand}</span>
+                <span className="text-muted-foreground text-xs">Marca:</span>
+                <span className="font-medium text-xs">{car.brand}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Modelo:</span>
-                <span className="font-medium">{car.model}</span>
+                <span className="text-muted-foreground text-xs">Modelo:</span>
+                <span className="font-medium text-xs">{car.model}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Año:</span>
-                <span className="font-medium">{car.year}</span>
+                <span className="text-muted-foreground text-xs">Año:</span>
+                <span className="font-medium text-xs">{car.year}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Color:</span>
-                <span className="font-medium">{car.color}</span>
+                <span className="text-muted-foreground text-xs">Color:</span>
+                <span className="font-medium text-xs">{car.color}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Placa:</span>
-                <span className="font-medium">{car.licensePlate}</span>
+                <span className="text-muted-foreground text-xs">Placa:</span>
+                <span className="font-medium text-xs">{car.licensePlate}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
                 <User className="h-5 w-5" />
                 Propietario
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nombre:</span>
-                <span className="font-medium">{car.owner.name}</span>
+                <span className="text-muted-foreground text-xs">Nombre:</span>
+                <span className="font-medium text-xs">{car.owner.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Email:</span>
-                <span className="font-medium">{car.owner.email}</span>
+                <span className="text-muted-foreground text-xs">Correo Electrónico:</span>
+                <span className="font-medium text-xs">{car.owner.email}</span>
               </div>
               {car.owner.phone && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Teléfono:</span>
-                  <span className="font-medium">{car.owner.phone}</span>
+                  <span className="text-muted-foreground text-xs">Teléfono:</span>
+                  <span className="font-medium text-xs">{car.owner.phone}</span>
                 </div>
               )}
               <Separator />
               <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
-                <Link href={`/mechanic/chat/${car.id}`}>Iniciar Chat</Link>
+                <Link href={`/dashboard/mechanic/chat/${car.id}`}>Iniciar Chat</Link>
               </Button>
             </CardContent>
           </Card>
@@ -154,7 +151,7 @@ export default async function CarPage({ params }: CarPageProps) {
         {activeMaintenances.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
                 <Wrench className="h-5 w-5 text-orange-600" />
                 Mantenimientos Activos
               </CardTitle>
@@ -192,8 +189,7 @@ export default async function CarPage({ params }: CarPageProps) {
         {/* Maintenance History */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
               Historial de Mantenimientos
             </CardTitle>
             <CardDescription>Trabajos completados anteriormente</CardDescription>
@@ -225,8 +221,7 @@ export default async function CarPage({ params }: CarPageProps) {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <div className="text-center h-32 flex items-center justify-center ">
                 <p className="text-muted-foreground text-xs">No hay mantenimientos registrados</p>
               </div>
             )}
@@ -236,8 +231,7 @@ export default async function CarPage({ params }: CarPageProps) {
         {/* Documents */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
               Documentos del Vehículo
             </CardTitle>
             <CardDescription>SOAT, tecnomecánico y otros documentos</CardDescription>
@@ -270,7 +264,7 @@ export default async function CarPage({ params }: CarPageProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-4">
+              <p className="text-center text-muted-foreground text-xs h-32 flex items-center justify-center">
                 No hay documentos disponibles
               </p>
             )}

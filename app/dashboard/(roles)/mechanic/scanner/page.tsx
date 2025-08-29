@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRScanner from '@/components/qr-scanner';
 import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 export default function ScannerPage() {
   const [error, setError] = useState<string>('');
@@ -14,29 +15,37 @@ export default function ScannerPage() {
     setIsProcessing(true);
     setError('');
 
+    toast.loading('Procesando código QR...');
+
+    // Log the raw QR code data for debugging
+    console.log('Processing QR code data:', result.carId);
+
     try {
-      // Verify car exists in database
+      // Verify car exists in database - send the raw QR code data
       const response = await fetch(`/api/cars/verify-qr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ carId: result.carId, vin: result.vin, timestamp: result.timestamp }),
+        body: JSON.stringify({ qrCode: result.carId }),
       });
 
       if (response.ok) {
         const { car } = await response.json();
         // Redirect to car details page
-        router.push(`/mechanic/car/${car.id}`);
+        toast.success('Código QR procesado correctamente');
+        router.push(`/dashboard/mechanic/car/${car.id}`);
       } else {
         const { error } = await response.json();
         setError(error || 'Código QR inválido');
+        toast.error(error || 'Código QR inválido');
       }
     } catch (err) {
       console.error('Error processing QR:', err);
       setError('Código QR inválido o formato incorrecto');
     } finally {
       setIsProcessing(false);
+      toast.dismiss();
     }
   };
 
@@ -57,18 +66,6 @@ export default function ScannerPage() {
 
         {/* Scanner */}
         <QRScanner onScan={handleScan} onError={handleError} />
-
-        {/* Processing State */}
-        {isProcessing && (
-          <Card>
-            <CardContent className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p>Procesando código QR...</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </>
   );
