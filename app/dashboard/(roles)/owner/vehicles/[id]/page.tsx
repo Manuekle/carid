@@ -103,7 +103,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
     year: 0,
     color: '',
     licensePlate: '',
-    vin: ''
+    vin: '',
   });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -116,7 +116,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
         year: car.year,
         color: car.color,
         licensePlate: car.licensePlate,
-        vin: car.vin
+        vin: car.vin,
       });
     }
   }, [car]);
@@ -125,7 +125,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [id]: id === 'year' ? parseInt(value) || 0 : value
+      [id]: id === 'year' ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -420,22 +420,22 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                         <div className="space-y-4">
                           <div className="grid gap-2">
                             <Label htmlFor="brand">Marca</Label>
-                            <Input 
-                              className="text-xs" 
-                              id="brand" 
+                            <Input
+                              className="text-xs"
+                              id="brand"
                               value={formData.brand}
                               onChange={handleInputChange}
-                              required 
+                              required
                             />
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="model">Modelo</Label>
-                            <Input 
-                              className="text-xs" 
-                              id="model" 
+                            <Input
+                              className="text-xs"
+                              id="model"
                               value={formData.model}
                               onChange={handleInputChange}
-                              required 
+                              required
                             />
                           </div>
                           <div className="grid gap-2">
@@ -453,12 +453,12 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="color">Color</Label>
-                            <Input 
-                              className="text-xs" 
-                              id="color" 
+                            <Input
+                              className="text-xs"
+                              id="color"
                               value={formData.color}
                               onChange={handleInputChange}
-                              required 
+                              required
                             />
                           </div>
                           <div className="grid gap-2">
@@ -473,12 +473,12 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="vin">VIN</Label>
-                            <Input 
-                              className="text-xs" 
-                              id="vin" 
+                            <Input
+                              className="text-xs"
+                              id="vin"
                               value={formData.vin}
                               onChange={handleInputChange}
-                              required 
+                              required
                             />
                           </div>
                         </div>
@@ -630,15 +630,17 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                 {car.documents.map(doc => (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
                       <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <div className="min-w-0">
-                        <p className="font-medium truncate">{doc.name}</p>
+                        <p className="font-medium text-xs truncate">{doc.name}</p>
                         <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                          <span>{new Date(doc.uploadedAt).toLocaleDateString('es-ES')}</span>
-                          {doc.docType && <span>• {doc.docType}</span>}
+                          <span className="text-xs">
+                            {new Date(doc.uploadedAt).toLocaleDateString('es-ES')}
+                          </span>
+                          {doc.docType && <span className="text-xs">• {doc.docType}</span>}
                         </div>
                       </div>
                     </div>

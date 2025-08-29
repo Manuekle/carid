@@ -152,7 +152,6 @@ export default async function CarPage({ params }: CarPageProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
-                <Wrench className="h-5 w-5 text-orange-600" />
                 Mantenimientos Activos
               </CardTitle>
               <CardDescription>Trabajos en progreso</CardDescription>
@@ -160,26 +159,26 @@ export default async function CarPage({ params }: CarPageProps) {
             <CardContent>
               <div className="space-y-4">
                 {activeMaintenances.map(maintenance => (
-                  <div
-                    key={maintenance.id}
-                    className="p-4 border rounded-lg bg-orange-50 dark:bg-orange-900/20"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{maintenance.description}</h4>
-                      <Badge variant="secondary">En Progreso</Badge>
+                  <>
+                    <div key={maintenance.id}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-xs">{maintenance.description}</h4>
+                        <Badge variant="secondary">En Progreso</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Iniciado: {new Date(maintenance.startDate).toLocaleDateString()}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs">
+                          Costo estimado: ${maintenance.totalCost.toLocaleString()}
+                        </span>
+                        <Button asChild size="sm">
+                          <Link href={`/mechanic/maintenance/${maintenance.id}`}>Ver Detalles</Link>
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Iniciado: {new Date(maintenance.startDate).toLocaleDateString()}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs">
-                        Costo estimado: ${maintenance.totalCost.toLocaleString()}
-                      </span>
-                      <Button asChild size="sm">
-                        <Link href={`/mechanic/maintenance/${maintenance.id}`}>Ver Detalles</Link>
-                      </Button>
-                    </div>
-                  </div>
+                    {activeMaintenances.length > 1 && <Separator />}
+                  </>
                 ))}
               </div>
             </CardContent>

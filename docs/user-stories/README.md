@@ -9,6 +9,7 @@
 - [x] **US-004**: As an owner, I want to add my vehicles to the system so I can track their maintenance
 - [x] **US-005**: As an owner, I want to view my vehicle's maintenance history so I can track its condition
 - [x] **US-006**: As an owner, I want to upload vehicle documents (SOAT, techno-mechanical) so I can keep them organized
+- [x] **US-015**: As an owner, I want to edit my vehicle's details so I can keep the information up to date
 - [x] **US-016**: As an owner, I want to view my vehicle's QR code so I can share it with mechanics
 - [x] **US-017**: As an owner, I want to download my vehicle's QR code so I can print it
 

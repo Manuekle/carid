@@ -1,8 +1,6 @@
 'use client';
 
-import type React from 'react';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,26 +29,29 @@ interface NewMaintenancePageProps {
   };
 }
 
+interface FormData {
+  description: string;
+  laborCost: string;
+  estimatedTime: string;
+}
+
 export default function NewMaintenancePage({ params }: NewMaintenancePageProps) {
+  const { id } = use(Promise.resolve({ id: params.id })) as { id: string };
   const [car, setCar] = useState<Car | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     description: '',
     laborCost: '',
     estimatedTime: '',
   });
   const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingCar, setIsLoadingCar] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingCar, setIsLoadingCar] = useState<boolean>(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCar();
-  }, [params.id]);
-
-  const fetchCar = async () => {
+  const fetchCar = useCallback(async () => {
     try {
-      const response = await fetch(`/api/cars/${params.id}`);
+      const response = await fetch(`/api/cars/${id}`);
       if (response.ok) {
         const data = await response.json();
         setCar(data.car);
@@ -62,10 +63,17 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
     } finally {
       setIsLoadingCar(false);
     }
-  };
+  }, [id]);
 
-  const getPartsCost = () => {
-    return selectedParts.reduce((sum, part) => sum + part.price * part.quantity, 0);
+  useEffect(() => {
+    fetchCar();
+  }, [fetchCar]);
+
+  const getPartsCost = (): number => {
+    return selectedParts.reduce(
+      (sum: number, part: SelectedPart) => sum + part.price * part.quantity,
+      0
+    );
   };
 
   const getLaborCost = () => {
@@ -84,7 +92,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
     return getTotalCost() * 0.4;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -108,7 +116,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          carId: params.id,
+          carId: id,
           description: formData.description,
           laborCost: getLaborCost(),
           estimatedTime: Number.parseInt(formData.estimatedTime) || null,

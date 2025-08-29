@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Check if the vehicle exists and belongs to the user
     const existingCar = await prisma.car.findUnique({
       where: { id },
-      select: { ownerId: true }
+      select: { ownerId: true },
     });
 
     if (!existingCar) {
@@ -103,10 +103,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Basic validation
     if (!brand || !model || !year || !color || !licensePlate || !vin) {
-      return NextResponse.json(
-        { error: 'Todos los campos son obligatorios' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Todos los campos son obligatorios' }, { status: 400 });
     }
 
     // Update the vehicle
@@ -159,19 +156,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(updatedCar);
   } catch (error) {
     console.error('Error updating car:', error);
-    
+
     // Handle Prisma validation errors
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       const prismaError = error as { meta?: { target?: string[] } };
       const field = prismaError.meta?.target?.[0];
-      const message = field 
+      const message = field
         ? `Ya existe un vehículo con este ${field === 'licensePlate' ? 'número de placa' : 'VIN'}`
         : 'El vehículo ya existe';
-      
-      return NextResponse.json(
-        { error: message },
-        { status: 409 }
-      );
+
+      return NextResponse.json({ error: message }, { status: 409 });
     }
 
     return NextResponse.json(

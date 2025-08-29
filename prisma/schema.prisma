@@ -18,6 +18,8 @@ enum DocumentType {
   TECNOMECANICO
   TARJETA_PROPIEDAD
   REVISION_GASES
+  POLIZA_SEGURO
+  LICENCIA_TRANSITO
   OTHER
 }
 
@@ -28,40 +30,40 @@ enum MaintenanceStatus {
 }
 
 model User {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  email       String   @unique
-  name        String
-  phone       String?
-  role        UserRole @default(OWNER)
-  isApproved  Boolean  @default(false) // Para mecánicos que necesitan aprobación
-  password    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String   @unique
+  name       String
+  phone      String?
+  role       UserRole @default(OWNER)
+  isApproved Boolean  @default(false) // Para mecánicos que necesitan aprobación
+  password   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relaciones
-  ownedCars        Car[]              @relation("CarOwner")
-  maintenanceLogs  MaintenanceLog[]   @relation("MechanicMaintenance")
-  chatSessions     UserChatSession[]  @relation("UserChats")
-  sentMessages     ChatMessage[]      @relation("MessageSender")
+  ownedCars       Car[]             @relation("CarOwner")
+  maintenanceLogs MaintenanceLog[]  @relation("MechanicMaintenance")
+  chatSessions    UserChatSession[] @relation("UserChats")
+  sentMessages    ChatMessage[]     @relation("MessageSender")
 
   @@map("users")
 }
 
 model Car {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  vin         String   @unique
-  qrCode      String?  @unique
-  brand       String
-  model       String
-  year        Int
-  color       String
-  licensePlate String  @unique
-  ownerId     String   @db.ObjectId
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  vin          String   @unique
+  qrCode       String?  @unique
+  brand        String
+  model        String
+  year         Int
+  color        String
+  licensePlate String   @unique
+  ownerId      String   @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relaciones
-  owner           User              @relation("CarOwner", fields: [ownerId], references: [id])
+  owner           User             @relation("CarOwner", fields: [ownerId], references: [id])
   maintenanceLogs MaintenanceLog[]
   documents       Document[]
   chatSessions    ChatSession[]
@@ -70,23 +72,23 @@ model Car {
 }
 
 model MaintenanceLog {
-  id              String            @id @default(auto()) @map("_id") @db.ObjectId
-  carId           String            @db.ObjectId
-  mechanicId      String            @db.ObjectId
-  description     String
-  laborCost       Float
-  totalCost       Float
-  status          MaintenanceStatus @default(IN_PROGRESS)
-  startDate       DateTime          @default(now())
-  estimatedTime   Int?              // En horas
-  completedDate   DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  carId         String            @db.ObjectId
+  mechanicId    String            @db.ObjectId
+  description   String
+  laborCost     Float
+  totalCost     Float
+  status        MaintenanceStatus @default(IN_PROGRESS)
+  startDate     DateTime          @default(now())
+  estimatedTime Int? // En horas
+  completedDate DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   // Relaciones
-  car     Car       @relation(fields: [carId], references: [id])
-  mechanic User     @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
-  invoice Invoice?
+  car       Car        @relation(fields: [carId], references: [id])
+  mechanic  User       @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
+  invoice   Invoice?
   usedParts UsedPart[]
 
   @@map("maintenance_logs")
@@ -109,11 +111,11 @@ model Part {
 }
 
 model UsedPart {
-  id                String @id @default(auto()) @map("_id") @db.ObjectId
-  maintenanceLogId  String @db.ObjectId
-  partId            String @db.ObjectId
-  quantity          Int
-  unitPrice         Float
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  maintenanceLogId String @db.ObjectId
+  partId           String @db.ObjectId
+  quantity         Int
+  unitPrice        Float
 
   // Relaciones
   maintenanceLog MaintenanceLog @relation(fields: [maintenanceLogId], references: [id])
@@ -123,14 +125,14 @@ model UsedPart {
 }
 
 model Invoice {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  maintenanceLogId  String   @unique @db.ObjectId
-  subtotal          Float
-  laborCost         Float
-  totalCost         Float
-  mechanicShare     Float    // 60%
-  adminShare        Float    // 40%
-  createdAt         DateTime @default(now())
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  maintenanceLogId String   @unique @db.ObjectId
+  subtotal         Float
+  laborCost        Float
+  totalCost        Float
+  mechanicShare    Float // 60%
+  adminShare       Float // 40%
+  createdAt        DateTime @default(now())
 
   // Relaciones
   maintenanceLog MaintenanceLog @relation(fields: [maintenanceLogId], references: [id])
@@ -139,15 +141,16 @@ model Invoice {
 }
 
 model Document {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  carId       String       @db.ObjectId
-  docType     DocumentType
-  fileUrl     String
-  fileName    String
-  expiryDate  DateTime?
-  uploadedAt  DateTime     @default(now())
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  carId      String       @db.ObjectId
+  name       String // Display name for the document
+  docType    DocumentType
+  fileUrl    String
+  fileName   String // Original file name
+  expiryDate DateTime?
+  uploadedAt DateTime     @default(now())
 
-  // Relaciones
+  // Relations
   car Car @relation(fields: [carId], references: [id])
 
   @@map("documents")
@@ -160,9 +163,9 @@ model ChatSession {
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  car               Car               @relation(fields: [carId], references: [id])
-  userChatSessions  UserChatSession[]
-  messages          ChatMessage[]
+  car              Car               @relation(fields: [carId], references: [id])
+  userChatSessions UserChatSession[]
+  messages         ChatMessage[]
 
   @@map("chat_sessions")
 }
