@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { ChartContainer } from './ui/chart';
 
 type DataPoint = {
   date: string;
@@ -72,9 +73,17 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
         <CardTitle className="text-xl font-semibold tracking-heading">{title}</CardTitle>
         {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </CardHeader>
-      <CardContent className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%" className="-ml-2">
-          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+      <CardContent>
+        <ChartContainer
+          config={{
+            revenue: {
+              label: 'Ingresos',
+              color: 'hsl(var(--primary))',
+            },
+          }}
+          className="aspect-auto h-[250px] w-full"
+        >
+          <LineChart data={chartData}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="hsl(var(--muted))"
@@ -85,15 +94,15 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
             <ReferenceLine y={0} stroke="hsl(var(--muted))" strokeWidth={1} strokeOpacity={0.5} />
             <XAxis
               dataKey="name"
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               tickLine={false}
               axisLine={true}
               tickMargin={4}
-              tickFormatter={value => `$${value}`}
+              tickFormatter={value => value}
             />
             <YAxis
-              tickFormatter={value => `$${value.toLocaleString()}`}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+              tickFormatter={value => `${value.toLocaleString()}`}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               tickLine={false}
               axisLine={true}
               width={60}
@@ -108,7 +117,7 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
               activeDot={{ r: 6 }}
             />
           </LineChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
       <div className="px-4 pt-4 border-t">
         <div className="flex items-center gap-1.5 text-xs">

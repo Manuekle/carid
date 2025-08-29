@@ -6,7 +6,7 @@ import { DollarSign, Wrench, Users, Car, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { LoadingPage } from '@/components/ui/loading';
-import { RevenueChart } from './components/revenue-chart';
+import { RevenueChart } from '@/components/revenue-chart';
 import { useSession } from 'next-auth/react';
 
 type DashboardStats = {
