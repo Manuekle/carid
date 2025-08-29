@@ -63,8 +63,34 @@ export default async function CarPage({ params }: CarPageProps) {
     notFound();
   }
 
-  const activeMaintenances = car.maintenanceLogs.filter(log => log.status === 'IN_PROGRESS');
-  const completedMaintenances = car.maintenanceLogs.filter(log => log.status === 'COMPLETED');
+  interface Invoice {
+    id: string;
+    totalCost: number;
+    // Add other invoice fields as needed
+  }
+
+  interface MaintenanceLog {
+    id: string;
+    status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+    description: string;
+    startDate: Date | string;
+    completedDate?: Date | string | null;
+    totalCost: number;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+    mechanic: {
+      name: string;
+    };
+    invoice?: Invoice | null;
+  }
+
+  const activeMaintenances = (car.maintenanceLogs as MaintenanceLog[]).filter(
+    log => log.status === 'IN_PROGRESS'
+  );
+
+  const completedMaintenances = (car.maintenanceLogs as MaintenanceLog[]).filter(
+    log => log.status === 'COMPLETED'
+  );
 
   return (
     <>
@@ -158,27 +184,38 @@ export default async function CarPage({ params }: CarPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {activeMaintenances.map(maintenance => (
-                  <>
-                    <div key={maintenance.id}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-xs">{maintenance.description}</h4>
-                        <Badge variant="secondary">En Progreso</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Iniciado: {new Date(maintenance.startDate).toLocaleDateString()}
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs">
-                          Costo estimado: ${maintenance.totalCost.toLocaleString()}
-                        </span>
-                        <Button asChild size="sm">
-                          <Link href={`/mechanic/maintenance/${maintenance.id}`}>Ver Detalles</Link>
-                        </Button>
-                      </div>
+                {activeMaintenances.map((maintenance: MaintenanceLog) => (
+                  <div key={maintenance.id} className="border-b last:border-b-0">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-xs">{maintenance.description}</h4>
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+                        En Progreso
+                      </span>
                     </div>
-                    {activeMaintenances.length > 1 && <Separator />}
-                  </>
+
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Iniciado:{' '}
+                      {new Date(maintenance.startDate).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </p>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs">
+                        $
+                        {maintenance.totalCost.toLocaleString('es-ES', {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/dashboard/mechanic/maintenance/${maintenance.id}`}>
+                          Ver Detalles
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -196,23 +233,34 @@ export default async function CarPage({ params }: CarPageProps) {
           <CardContent>
             {completedMaintenances.length > 0 ? (
               <div className="space-y-4">
-                {completedMaintenances.map(maintenance => (
-                  <div key={maintenance.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                {completedMaintenances.map((maintenance: MaintenanceLog) => (
+                  <div key={maintenance.id} className="p-4 border-b last:border-b-0">
+                    <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{maintenance.description}</h4>
-                      <Badge>Completado</Badge>
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+                        Completado
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Mecánico: {maintenance.mechanic.name} •{' '}
+
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {maintenance.mechanic.name} •{' '}
                       {maintenance.completedDate
-                        ? new Date(maintenance.completedDate).toLocaleDateString()
+                        ? new Date(maintenance.completedDate).toLocaleDateString('es-ES', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })
                         : 'Fecha no disponible'}
                     </p>
+
                     <div className="flex justify-between items-center">
-                      <span className="text-xs">
-                        Costo total: ${maintenance.totalCost.toLocaleString()}
+                      <span className="text-sm">
+                        $
+                        {maintenance.totalCost.toLocaleString('es-ES', {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
-                      <Button asChild variant="outline" size="sm" className="bg-transparent">
+                      <Button asChild variant="ghost" size="sm">
                         <Link href={`/mechanic/maintenance/${maintenance.id}`}>Ver Detalles</Link>
                       </Button>
                     </div>
@@ -238,29 +286,38 @@ export default async function CarPage({ params }: CarPageProps) {
           <CardContent>
             {car.documents.length > 0 ? (
               <div className="space-y-3">
-                {car.documents.map(doc => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{doc.docType}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {doc.fileName} • Subido: {new Date(doc.uploadedAt).toLocaleDateString()}
-                      </p>
-                      {doc.expiryDate && (
+                {car.documents.map(
+                  (doc: {
+                    id: string;
+                    docType: string;
+                    fileName: string;
+                    fileUrl: string;
+                    uploadedAt: Date;
+                    expiryDate?: Date;
+                  }) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{doc.docType}</p>
                         <p className="text-xs text-muted-foreground">
-                          Vence: {new Date(doc.expiryDate).toLocaleDateString()}
+                          {doc.fileName} • Subido: {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
-                      )}
+                        {doc.expiryDate && (
+                          <p className="text-xs text-muted-foreground">
+                            Vence: {new Date(doc.expiryDate).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      <Button asChild variant="outline" size="sm" className="bg-transparent">
+                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                          Ver
+                        </a>
+                      </Button>
                     </div>
-                    <Button asChild variant="outline" size="sm" className="bg-transparent">
-                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                        Ver
-                      </a>
-                    </Button>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
               <p className="text-center text-muted-foreground text-xs h-32 flex items-center justify-center">

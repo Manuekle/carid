@@ -2,9 +2,6 @@ import { getServerSession } from 'next-auth';
 import { redirect, notFound } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 
 import ChatInterface from '@/components/chat/chat-interface';
 
@@ -50,12 +47,6 @@ export default async function MechanicChatPage({ params }: MechanicChatPageProps
     <>
       <div className="space-y-8">
         <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/mechanic/chat">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
-            </Link>
-          </Button>
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">
               Chat con {maintenance.car.owner.name}

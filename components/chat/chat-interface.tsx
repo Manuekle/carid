@@ -94,8 +94,10 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
   };
 
   const getUserInitials = (name: string) => {
+    if (!name) return 'U';
     return name
       .split(' ')
+      .slice(0, 2)
       .map(n => n[0])
       .join('')
       .toUpperCase();
@@ -105,13 +107,11 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-blue-600 text-white">
-              {getUserInitials(otherUser.name)}
-            </AvatarFallback>
+          <Avatar className="h-8 w-8 border border-zinc-200 text-xs">
+            <AvatarFallback>{getUserInitials(otherUser.name)}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold">{otherUser.name}</p>
+            <p className="font-medium text-xs">{otherUser.name}</p>
             <p className="text-xs text-muted-foreground font-normal">{otherUser.email}</p>
           </div>
         </CardTitle>
@@ -131,23 +131,21 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
                 >
                   {!isCurrentUser && (
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarFallback className="bg-gray-500 text-white">
-                        {getUserInitials(message.senderName)}
-                      </AvatarFallback>
+                      <AvatarFallback>{getUserInitials(message.senderName)}</AvatarFallback>
                     </Avatar>
                   )}
 
                   <div
                     className={cn(
                       'max-w-[70%] rounded-lg px-3 py-2',
-                      isCurrentUser ? 'bg-blue-600 text-white' : 'bg-muted'
+                      isCurrentUser ? 'bg-black text-white' : 'bg-muted'
                     )}
                   >
                     <p className="text-xs">{message.message}</p>
                     <p
                       className={cn(
                         'text-xs mt-1',
-                        isCurrentUser ? 'text-blue-100' : 'text-muted-foreground'
+                        isCurrentUser ? 'text-white' : 'text-muted-foreground'
                       )}
                     >
                       {new Date(message.sentAt).toLocaleTimeString()}
@@ -156,7 +154,7 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
 
                   {isCurrentUser && (
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarFallback className="bg-blue-600 text-white">
+                      <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
@@ -165,8 +163,8 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
               );
             })
           ) : (
-            <div className="text-center text-muted-foreground py-8">
-              <p>No hay mensajes aún. ¡Inicia la conversación!</p>
+            <div className="text-center text-muted-foreground h-full flex items-center justify-center">
+              <p className="text-xs">No hay mensajes aún. ¡Inicia la conversación!</p>
             </div>
           )}
           <div ref={messagesEndRef} />

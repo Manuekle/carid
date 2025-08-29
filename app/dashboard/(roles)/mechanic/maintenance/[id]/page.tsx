@@ -67,7 +67,7 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
     <>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between sm:flex-row flex-col gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">Detalle de Mantenimiento</h1>
             <p className="text-muted-foreground text-xs">
@@ -75,7 +75,12 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
               {maintenance.car.licensePlate}
             </p>
           </div>
-          {!isCompleted && <CompleteMaintenanceButton maintenanceId={maintenance.id} />}
+          <div className="flex sm:flex-row flex-col items-center gap-2">
+            <Button asChild variant="outline" className="bg-transparent">
+              <Link href={`/dashboard/mechanic/car/${maintenance.carId}`}>Volver al Vehículo</Link>
+            </Button>
+            {!isCompleted && <CompleteMaintenanceButton maintenanceId={maintenance.id} />}
+          </div>
         </div>
 
         {/* Status */}
@@ -83,17 +88,6 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className={`p-2 rounded-full ${
-                    isCompleted ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'
-                  }`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <Wrench className="h-5 w-5" />
-                  )}
-                </div>
                 <div>
                   <h3 className="font-semibold text-xl tracking-heading">
                     {isCompleted ? 'Mantenimiento Completado' : 'Mantenimiento en Progreso'}
@@ -212,22 +206,29 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
               <CardContent>
                 {maintenance.usedParts.length > 0 ? (
                   <div className="space-y-3">
-                    {maintenance.usedParts.map(usedPart => (
-                      <div
-                        key={usedPart.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-xs">{usedPart.part.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            ${usedPart.unitPrice.toLocaleString()} x {usedPart.quantity}
-                          </p>
+                    {maintenance.usedParts.map(
+                      (usedPart: {
+                        id: string;
+                        part: { name: string };
+                        unitPrice: number;
+                        quantity: number;
+                      }) => (
+                        <div
+                          key={usedPart.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium text-xs">{usedPart.part.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              ${usedPart.unitPrice.toLocaleString()} x {usedPart.quantity}
+                            </p>
+                          </div>
+                          <span className="font-medium text-xs">
+                            ${(usedPart.unitPrice * usedPart.quantity).toLocaleString()}
+                          </span>
                         </div>
-                        <span className="font-medium text-xs">
-                          ${(usedPart.unitPrice * usedPart.quantity).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 ) : (
                   <p className="text-center text-xs text-muted-foreground py-4">
@@ -244,7 +245,6 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
-                <Receipt className="h-5 w-5" />
                 Factura
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
@@ -292,16 +292,6 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
             </CardContent>
           </Card>
         )}
-
-        {/* Actions */}
-        <div className="flex gap-4">
-          <Button asChild variant="outline" className="bg-transparent">
-            <Link href={`/dashboard/mechanic/car/${maintenance.carId}`}>Volver al Vehículo</Link>
-          </Button>
-          <Button asChild variant="outline" className="bg-transparent">
-            <Link href="/dashboard/mechanic/history">Ver Historial</Link>
-          </Button>
-        </div>
       </div>
     </>
   );
