@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/*
+Disallow: /dashboard/*
+Disallow: /_next/*
+Disallow: /auth/*
+Disallow: /*?*
+
+# Host
+Host: https://carid.vercel.app
+
+# Sitemaps
+Sitemap: https://carid.vercel.app/sitemap.xml
