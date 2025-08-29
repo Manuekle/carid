@@ -73,7 +73,7 @@ export default function MechanicChatPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-xl font-semibold tracking-heading flex items-center gap-2">
                       <Car className="h-5 w-5" />
                       {maintenance.car.brand} {maintenance.car.model}
                     </CardTitle>
@@ -96,7 +96,7 @@ export default function MechanicChatPage() {
                 </div>
 
                 <Button asChild className="w-full">
-                  <Link href={`/mechanic/chat/${maintenance.car.id}`}>
+                  <Link href={`/dashboard/mechanic/chat/${maintenance.car.id}`}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Abrir Chat
                   </Link>
@@ -114,7 +114,7 @@ export default function MechanicChatPage() {
               El chat estará disponible cuando tengas trabajos en progreso
             </p>
             <Button asChild variant="outline">
-              <Link href="/mechanic/scanner">Escanear QR para iniciar trabajo</Link>
+              <Link href="/dashboard/mechanic/scanner">Escanear QR para iniciar trabajo</Link>
             </Button>
           </CardContent>
         </Card>

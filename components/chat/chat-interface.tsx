@@ -112,9 +112,9 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
               <AvatarFallback>{otherUser.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{otherUser.name || 'Usuario'}</p>
+              <p className="font-medium text-xs">{otherUser.name || 'Usuario'}</p>
               {otherUser.email && (
-                <p className="text-xs text-muted-foreground">{otherUser.email}</p>
+                <p className="text-xs font-normal text-muted-foreground">{otherUser.email}</p>
               )}
             </div>
           </div>

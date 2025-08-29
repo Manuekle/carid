@@ -66,6 +66,13 @@ export const navLinkGroups: NavLinkGroup[] = [
         roles: ['MECHANIC'],
         description: 'Historial de mantenimientos',
       },
+      {
+        href: '/dashboard/mechanic/chat',
+        icon: MessageSquare,
+        label: 'Chat',
+        roles: ['MECHANIC'],
+        description: 'Comunicación con propietarios',
+      },
     ],
   },
   {

@@ -509,7 +509,13 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                 <DollarSign className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">Total Gastado</p>
-                  <p className="text-xs font-medium">${totalSpent.toFixed(2)}</p>
+                  <p className="text-xs font-medium">
+                    $
+                    {totalSpent.toLocaleString('es-CO', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -555,13 +561,10 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
             {car.maintenanceLogs.length > 0 ? (
               <div className="space-y-4">
                 {car.maintenanceLogs.map(log => (
-                  <div
-                    key={log.id}
-                    className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                  >
+                  <div key={log.id} className="border rounded-lg p-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div>
-                        <h4 className="font-medium">{log.description}</h4>
+                        <h4 className="font-medium text-xs">{log.description}</h4>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
                           <div className="flex items-center">
                             <Calendar className="h-3.5 w-3.5 mr-1.5" />
@@ -575,8 +578,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                           )}
                           {log.invoice && (
                             <div className="flex items-center">
-                              <DollarSign className="h-3.5 w-3.5 mr-1.5" />$
-                              {log.invoice.totalCost.toFixed(2)}
+                              ${log.invoice.totalCost.toFixed(2)}
                             </div>
                           )}
                         </div>
