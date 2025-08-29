@@ -237,7 +237,7 @@ export default function AddVehiclePage() {
               <h3 className="font-semibold text-lg tracking-card">
                 {createdVehicle.brand} {createdVehicle.model} ({createdVehicle.year})
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Placa: {createdVehicle.licensePlate} • Color: {createdVehicle.color}
               </p>
               <p className="text-xs text-muted-foreground font-mono bg-gray-100 px-4 py-2 rounded-md">
@@ -290,7 +290,7 @@ export default function AddVehiclePage() {
       <div className="flex items-center space-x-2">
         <div>
           <h1 className="text-2xl font-semibold tracking-heading">Agregar Nuevo Vehículo</h1>
-          <p className="text-sm text-muted-foreground">Registra un nuevo vehículo en tu cuenta</p>
+          <p className="text-xs text-muted-foreground">Registra un nuevo vehículo en tu cuenta</p>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ export default function AddVehiclePage() {
           <CardTitle className="text-xl font-semibold tracking-card">
             Información del Vehículo
           </CardTitle>
-          <CardDescription className="text-sm">
+          <CardDescription className="text-xs">
             Completa todos los campos para registrar tu vehículo
           </CardDescription>
         </CardHeader>

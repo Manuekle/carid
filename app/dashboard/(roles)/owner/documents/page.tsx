@@ -338,7 +338,7 @@ export default function DocumentsPage() {
 
                       <div className="flex-1 min-w-0 space-y-2">
                         <div className="flex flex-col xs:flex-row xs:items-center gap-2">
-                          <h3 className="font-semibold text-sm sm:text-xs tracking-card truncate">
+                          <h3 className="font-semibold text-xs sm:text-xs tracking-card truncate">
                             {document.name}
                           </h3>
                           <div className="flex-shrink-0">

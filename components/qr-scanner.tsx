@@ -191,7 +191,7 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
                 <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
                   <div className="text-center text-muted-foreground">
                     <Camera className="h-8 w-8 mx-auto mb-2" />
-                    <p className="text-sm">Presiona iniciar para comenzar</p>
+                    <p className="text-xs">Presiona iniciar para comenzar</p>
                   </div>
                 </div>
               )}

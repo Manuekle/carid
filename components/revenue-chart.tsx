@@ -50,7 +50,7 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
     if (active && payload && payload.length) {
       const value = payload[0].value as number;
       return (
-        <div className="bg-background border border-border rounded-lg shadow-lg p-3 text-sm">
+        <div className="bg-background border border-border rounded-lg shadow-lg p-3 text-xs">
           <p className="font-medium text-foreground mb-1">{label}</p>
           <div className="flex items-center justify-between min-w-[120px]">
             <div className="flex items-center">

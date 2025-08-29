@@ -69,7 +69,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
         <p className="text-lg font-medium">Error al cargar el panel</p>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs">
           {error || 'No se pudieron cargar los datos'}
         </p>
         <Button variant="outline" onClick={() => window.location.reload()}>
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-semibold tracking-heading">
             Bienvenido, {session?.user?.name || 'Administrador'}
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             Resumen general de la operación del negocio
           </p>
         </div>
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos del Día</CardTitle>
+            <CardTitle className="text-xs font-medium">Ingresos del Día</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reparaciones Hoy</CardTitle>
+            <CardTitle className="text-xs font-medium">Reparaciones Hoy</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuarios Activos</CardTitle>
+            <CardTitle className="text-xs font-medium">Usuarios Activos</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vehículos Registrados</CardTitle>
+            <CardTitle className="text-xs font-medium">Vehículos Registrados</CardTitle>
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
             <AlertCircle className="h-5 w-5 text-destructive mr-3 flex-shrink-0" />
             <div>
               <h3 className="font-medium">¡Atención! Repuestos con bajo inventario</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Tienes {stats.lowStockParts} {stats.lowStockParts === 1 ? 'repuesto' : 'repuestos'}{' '}
                 con stock bajo.
                 <a href="/dashboard/admin/inventory" className="text-primary hover:underline ml-1">

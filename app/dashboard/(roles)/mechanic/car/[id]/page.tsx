@@ -252,7 +252,7 @@ export default async function CarPage({ params }: CarPageProps) {
                       <Badge variant="outline">Completado</Badge>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-xs text-muted-foreground mb-3">
                       {maintenance.mechanic.name} •{' '}
                       {maintenance.completedDate
                         ? new Date(maintenance.completedDate).toLocaleDateString('es-ES', {
@@ -264,7 +264,7 @@ export default async function CarPage({ params }: CarPageProps) {
                     </p>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">
+                      <span className="text-xs">
                         $
                         {maintenance.totalCost.toLocaleString('es-ES', {
                           minimumFractionDigits: 2,

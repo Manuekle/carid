@@ -287,7 +287,7 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
                   <div className="space-y-2">
                     <Label
                       htmlFor="file"
-                      className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                      className="cursor-pointer inline-flex items-center justify-center rounded-md text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                     >
                       Seleccionar Archivo
                     </Label>
@@ -304,7 +304,7 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
                     PDF, JPG, PNG o WebP (máximo 10MB)
                   </p>
                   {formData.file && (
-                    <p className="text-sm font-medium mt-2 text-primary">
+                    <p className="text-xs font-medium mt-2 text-primary">
                       {formData.file.name} ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
                     </p>
                   )}
