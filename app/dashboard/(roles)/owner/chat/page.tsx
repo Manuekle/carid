@@ -106,7 +106,6 @@ export default function OwnerChatPage() {
                     disabled={!hasActiveMaintenances}
                   >
                     <Link href={`/dashboard/owner/chat/${car.id}`}>
-                      <MessageSquare className="h-4 w-4 mr-2" />
                       {hasActiveMaintenances ? 'Abrir Chat' : 'Chat no disponible'}
                     </Link>
                   </Button>

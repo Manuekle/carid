@@ -2,6 +2,18 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +29,6 @@ import {
   Download,
   Copy,
 } from 'lucide-react';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { LoadingPage } from '@/components/ui/loading';
 
@@ -85,6 +96,68 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
   const [car, setCar] = useState<CarData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    brand: '',
+    model: '',
+    year: 0,
+    color: '',
+    licensePlate: '',
+    vin: ''
+  });
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Initialize form data when car data is loaded
+  useEffect(() => {
+    if (car) {
+      setFormData({
+        brand: car.brand,
+        model: car.model,
+        year: car.year,
+        color: car.color,
+        licensePlate: car.licensePlate,
+        vin: car.vin
+      });
+    }
+  }, [car]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: id === 'year' ? parseInt(value) || 0 : value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!car) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/vehicles/${car.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el vehículo');
+      }
+
+      const updatedCar = await response.json();
+      setCar(updatedCar);
+      toast.success('Vehículo actualizado correctamente');
+      setIsDrawerOpen(false);
+    } catch (error) {
+      console.error('Error al actualizar el vehículo:', error);
+      toast.error('Error al actualizar el vehículo');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -330,9 +403,100 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
               >
                 Mostrar Código QR
               </Button> */}
-              <Button asChild>
-                <Link href={`/dashboard/owner/vehicles/${car.id}/edit`}>Editar Vehículo</Link>
-              </Button>
+              <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                <DrawerTrigger asChild>
+                  <Button onClick={() => setIsDrawerOpen(true)}>Editar Vehículo</Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <div className="mx-auto w-full max-w-md">
+                    <DrawerHeader>
+                      <DrawerTitle className="text-2xl font-semibold tracking-heading">
+                        Editar Vehículo
+                      </DrawerTitle>
+                      <DrawerDescription>Actualiza la información del vehículo</DrawerDescription>
+                    </DrawerHeader>
+                    <form onSubmit={handleSubmit}>
+                      <div className="p-4 pb-0">
+                        <div className="space-y-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="brand">Marca</Label>
+                            <Input 
+                              className="text-xs" 
+                              id="brand" 
+                              value={formData.brand}
+                              onChange={handleInputChange}
+                              required 
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="model">Modelo</Label>
+                            <Input 
+                              className="text-xs" 
+                              id="model" 
+                              value={formData.model}
+                              onChange={handleInputChange}
+                              required 
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="year">Año</Label>
+                            <Input
+                              className="text-xs"
+                              id="year"
+                              type="number"
+                              value={formData.year}
+                              onChange={handleInputChange}
+                              min="1900"
+                              max={new Date().getFullYear() + 1}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="color">Color</Label>
+                            <Input 
+                              className="text-xs" 
+                              id="color" 
+                              value={formData.color}
+                              onChange={handleInputChange}
+                              required 
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="licensePlate">Placa</Label>
+                            <Input
+                              className="text-xs"
+                              id="licensePlate"
+                              value={formData.licensePlate}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="vin">VIN</Label>
+                            <Input 
+                              className="text-xs" 
+                              id="vin" 
+                              value={formData.vin}
+                              onChange={handleInputChange}
+                              required 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <DrawerFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                        </Button>
+                        <DrawerClose asChild>
+                          <Button type="button" variant="outline" disabled={isSubmitting}>
+                            Cancelar
+                          </Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </form>
+                  </div>
+                </DrawerContent>
+              </Drawer>
             </div>
           </div>
         </CardHeader>

@@ -172,11 +172,6 @@ export default function VehiclesPage() {
                     <Button asChild variant="default" size="sm" className="flex-1">
                       <Link href={`/dashboard/owner/vehicles/${car.id}`}>Ver Detalles</Link>
                     </Button>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/dashboard/owner/vehicles/${car.id}/qr`}>
-                        <QrCode className="h-4 w-4" />
-                      </Link>
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
