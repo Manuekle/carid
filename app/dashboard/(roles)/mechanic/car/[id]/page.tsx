@@ -110,7 +110,7 @@ export default async function CarPage({ params }: CarPageProps) {
     <>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between sm:flex-row flex-col gap-2">
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">
               {car.brand} {car.model} ({car.year})
