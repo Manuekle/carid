@@ -197,7 +197,7 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
               )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex sm:flex-row flex-col gap-2">
               <Button
                 onClick={toggleScanning}
                 variant={isScanning ? 'destructive' : 'default'}

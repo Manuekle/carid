@@ -169,13 +169,15 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
                   {part.photoUrl && (
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={part.photoUrl || '/placeholder.svg'}
+                        src={part.photoUrl ? part.photoUrl : '/images/placeholder.png'}
                         alt={part.name}
+                        fill
                         className="w-full h-full object-cover"
                         onError={e => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/repuesto.png';
+                          target.src = '/images/placeholder.png';
                         }}
+                        unoptimized={!part.photoUrl}
                       />
                     </div>
                   )}

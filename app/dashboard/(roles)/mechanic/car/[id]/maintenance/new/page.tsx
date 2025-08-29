@@ -123,7 +123,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
       const data = await response.json();
 
       if (response.ok) {
-        router.push(`/mechanic/maintenance/${data.maintenance.id}`);
+        router.push(`/dashboard/mechanic/maintenance/${data.maintenance.id}`);
       } else {
         setError(data.error);
       }

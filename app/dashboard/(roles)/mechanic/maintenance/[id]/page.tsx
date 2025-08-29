@@ -80,7 +80,7 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
 
         {/* Status */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
@@ -95,7 +95,7 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium">
+                  <h3 className="font-semibold text-xl tracking-heading">
                     {isCompleted ? 'Mantenimiento Completado' : 'Mantenimiento en Progreso'}
                   </h3>
                   <p className="text-xs text-muted-foreground">
@@ -124,44 +124,44 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Marca:</span>
-                  <span className="font-medium">{maintenance.car.brand}</span>
+                  <span className="text-muted-foreground text-xs">Marca:</span>
+                  <span className="font-medium text-xs">{maintenance.car.brand}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Modelo:</span>
-                  <span className="font-medium">{maintenance.car.model}</span>
+                  <span className="text-muted-foreground text-xs">Modelo:</span>
+                  <span className="font-medium text-xs">{maintenance.car.model}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Año:</span>
-                  <span className="font-medium">{maintenance.car.year}</span>
+                  <span className="text-muted-foreground text-xs">Año:</span>
+                  <span className="font-medium text-xs">{maintenance.car.year}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Placa:</span>
-                  <span className="font-medium">{maintenance.car.licensePlate}</span>
+                  <span className="text-muted-foreground text-xs">Placa:</span>
+                  <span className="font-medium text-xs">{maintenance.car.licensePlate}</span>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                   <User className="h-5 w-5" />
                   Propietario
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nombre:</span>
-                  <span className="font-medium">{maintenance.car.owner.name}</span>
+                  <span className="text-muted-foreground text-xs">Nombre:</span>
+                  <span className="font-medium text-xs">{maintenance.car.owner.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-medium">{maintenance.car.owner.email}</span>
+                  <span className="text-muted-foreground text-xs">Correo Electrónico:</span>
+                  <span className="font-medium text-xs">{maintenance.car.owner.email}</span>
                 </div>
                 {maintenance.car.owner.phone && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Teléfono:</span>
-                    <span className="font-medium">{maintenance.car.owner.phone}</span>
+                    <span className="text-muted-foreground text-xs">Teléfono:</span>
+                    <span className="font-medium text-xs">{maintenance.car.owner.phone}</span>
                   </div>
                 )}
               </CardContent>
@@ -172,30 +172,30 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                   <Wrench className="h-5 w-5" />
                   Detalles del Trabajo
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <span className="text-muted-foreground">Descripción:</span>
-                  <p className="font-medium mt-1">{maintenance.description}</p>
+                  <span className="text-muted-foreground text-xs">Descripción:</span>
+                  <p className="font-medium mt-1 text-xs">{maintenance.description}</p>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mecánico:</span>
-                  <span className="font-medium">{maintenance.mechanic.name}</span>
+                  <span className="text-muted-foreground text-xs">Mecánico:</span>
+                  <span className="font-medium text-xs">{maintenance.mechanic.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fecha de inicio:</span>
-                  <span className="font-medium">
+                  <span className="text-muted-foreground text-xs">Fecha de inicio:</span>
+                  <span className="font-medium text-xs">
                     {new Date(maintenance.startDate).toLocaleDateString()}
                   </span>
                 </div>
                 {maintenance.estimatedTime && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tiempo estimado:</span>
-                    <span className="font-medium">{maintenance.estimatedTime} horas</span>
+                    <span className="text-muted-foreground text-xs">Tiempo estimado:</span>
+                    <span className="font-medium text-xs">{maintenance.estimatedTime} horas</span>
                   </div>
                 )}
               </CardContent>
@@ -204,7 +204,7 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
             {/* Used Parts */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                   <Package className="h-5 w-5" />
                   Repuestos Utilizados
                 </CardTitle>
@@ -218,19 +218,19 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
                         className="flex items-center justify-between p-3 border rounded-lg"
                       >
                         <div>
-                          <p className="font-medium">{usedPart.part.name}</p>
+                          <p className="font-medium text-xs">{usedPart.part.name}</p>
                           <p className="text-xs text-muted-foreground">
                             ${usedPart.unitPrice.toLocaleString()} x {usedPart.quantity}
                           </p>
                         </div>
-                        <span className="font-medium">
+                        <span className="font-medium text-xs">
                           ${(usedPart.unitPrice * usedPart.quantity).toLocaleString()}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-4">
+                  <p className="text-center text-xs text-muted-foreground py-4">
                     No se utilizaron repuestos
                   </p>
                 )}
@@ -243,46 +243,48 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
         {maintenance.invoice && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
                 <Receipt className="h-5 w-5" />
                 Factura
               </CardTitle>
-              <CardDescription>Desglose de costos y ganancias</CardDescription>
+              <CardDescription className="text-xs text-muted-foreground">
+                Desglose de costos y ganancias
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span>Subtotal (Repuestos):</span>
-                  <span className="font-medium">
+                  <span className="text-xs">Subtotal (Repuestos):</span>
+                  <span className="font-medium text-xs">
                     ${maintenance.invoice.subtotal.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Mano de Obra:</span>
-                  <span className="font-medium">
+                  <span className="text-xs">Mano de Obra:</span>
+                  <span className="font-medium text-xs">
                     ${maintenance.invoice.laborCost.toLocaleString()}
                   </span>
                 </div>
                 <Separator />
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total:</span>
-                  <span>${maintenance.invoice.totalCost.toLocaleString()}</span>
+                <div className="flex justify-between font-medium">
+                  <span className="text-xs">Total:</span>
+                  <span className="text-xs">${maintenance.invoice.totalCost.toLocaleString()}</span>
                 </div>
               </div>
 
               <Separator />
 
               <div className="space-y-2">
-                <h4 className="font-medium">Distribución de Ganancias:</h4>
-                <div className="flex justify-between text-green-600">
-                  <span>Tu parte (60%):</span>
-                  <span className="font-medium">
+                <h4 className="font-medium text-xs">Distribución de Ganancias:</h4>
+                <div className="flex justify-between text-xs">
+                  <span className="text-xs">Tu parte (60%):</span>
+                  <span className="font-medium text-xs">
                     ${maintenance.invoice.mechanicShare.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Administración (40%):</span>
-                  <span className="font-medium">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Mecánico (40%):</span>
+                  <span className="font-medium text-xs">
                     ${maintenance.invoice.adminShare.toLocaleString()}
                   </span>
                 </div>
@@ -294,10 +296,10 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
         {/* Actions */}
         <div className="flex gap-4">
           <Button asChild variant="outline" className="bg-transparent">
-            <Link href={`/mechanic/car/${maintenance.carId}`}>Volver al Vehículo</Link>
+            <Link href={`/dashboard/mechanic/car/${maintenance.carId}`}>Volver al Vehículo</Link>
           </Button>
           <Button asChild variant="outline" className="bg-transparent">
-            <Link href="/mechanic/history">Ver Historial</Link>
+            <Link href="/dashboard/mechanic/history">Ver Historial</Link>
           </Button>
         </div>
       </div>
