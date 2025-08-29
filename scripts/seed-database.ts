@@ -1,55 +1,60 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+// Create a custom type that includes the phone field
+type UserWithPhone = Prisma.UserCreateInput & {
+  phone?: string;
+};
+
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@carid.com' },
-    update: {},
-    create: {
+  // Create users data
+  const users = [
+    {
       email: 'admin@carid.com',
       name: 'Administrador CarID',
-      phone: '+57 300 123 4567',
-      role: 'ADMIN',
-      isApproved: true,
-      password: adminPassword,
+      phone: '+573001234567',
+      role: 'ADMIN' as const,
+      password: 'admin123',
     },
-  });
-
-  // Create approved mechanic
-  const mechanicPassword = await bcrypt.hash('mechanic123', 10);
-  await prisma.user.upsert({
-    where: { email: 'mechanic@carid.com' },
-    update: {},
-    create: {
+    {
       email: 'mechanic@carid.com',
       name: 'Juan Pérez',
-      phone: '+57 301 234 5678',
-      role: 'MECHANIC',
-      isApproved: true,
-      password: mechanicPassword,
+      phone: '+573012345678',
+      role: 'MECHANIC' as const,
+      password: 'mechanic123',
     },
-  });
-
-  // Create car owner
-  const ownerPassword = await bcrypt.hash('owner123', 10);
-  await prisma.user.upsert({
-    where: { email: 'owner@carid.com' },
-    update: {},
-    create: {
+    {
       email: 'owner@carid.com',
       name: 'María García',
-      phone: '+57 302 345 6789',
-      role: 'OWNER',
-      isApproved: true,
-      password: ownerPassword,
+      phone: '+573023456789',
+      role: 'OWNER' as const,
+      password: 'owner123',
     },
-  });
+  ];
+
+  // Create or update users
+  for (const userData of users) {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const { password, ...userWithoutPassword } = userData;
+
+    const userDataWithHashedPassword: UserWithPhone = {
+      ...userWithoutPassword,
+      password: hashedPassword,
+      isApproved: true,
+    };
+
+    await prisma.user.upsert({
+      where: { email: userData.email },
+      update: userDataWithHashedPassword,
+      create: userDataWithHashedPassword,
+    });
+  }
 
   console.log('✅ Users seeded successfully!');
   console.log('👤 Admin: admin@carid.com / admin123');
@@ -59,7 +64,7 @@ async function main() {
 
 main()
   .catch(e => {
-    console.error('❌ Error seeding database:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

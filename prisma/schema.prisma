@@ -1,5 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
 }
 
 datasource db {
@@ -29,67 +33,142 @@ enum MaintenanceStatus {
   CANCELLED
 }
 
-model User {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  email      String   @unique
-  name       String
-  phone      String?
-  role       UserRole @default(OWNER)
-  isApproved Boolean  @default(false) // Para mecánicos que necesitan aprobación
-  password   String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+// User and related auth models
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relaciones
-  ownedCars       Car[]             @relation("CarOwner")
-  maintenanceLogs MaintenanceLog[]  @relation("MechanicMaintenance")
-  chatSessions    UserChatSession[] @relation("UserChats")
-  sentMessages    ChatMessage[]     @relation("MessageSender")
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model User {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  phone           String?            @unique
+  email           String?            @unique
+  emailVerified   DateTime?
+  image           String?
+  role            UserRole           @default(OWNER)
+  isApproved      Boolean            @default(false)
+  password        String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relationships
+  accounts        Account[]
+  sessions        Session[]
+  loginAttempts   LoginAttempt[]
+  authLogs        AuthLog[]
+  ownedCars       Car[]              @relation("CarOwner")
+  // Corrected: Explicitly defined relation for mechanics
+  managedMaintenances MaintenanceLog[] @relation("MechanicMaintenance")
+  chatSessions    UserChatSession[]  @relation("UserChats")
+  sentMessages    ChatMessage[]      @relation("MessageSender")
 
   @@map("users")
 }
 
-model Car {
+model Session {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  vin          String   @unique
-  qrCode       String?  @unique
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Corrected: Removed the `@unique` constraint on email
+model LoginAttempt {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  email       String
+  attempts    Int      @default(1)
+  lastAttempt DateTime @default(now())
+  lockedUntil DateTime
+  user        User?    @relation(fields: [userId], references: [id])
+  userId      String?  @db.ObjectId
+
+  @@unique([email])
+  @@map("login_attempts")
+}
+
+model AuthLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  success   Boolean
+  ipAddress String?
+  userAgent String?
+  userId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("auth_logs")
+}
+
+// Core business models
+model Car {
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  vin          String          @unique
+  qrCode       String?         @unique
   brand        String
   model        String
   year         Int
   color        String
-  licensePlate String   @unique
-  ownerId      String   @db.ObjectId
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  licensePlate String          @unique
+  ownerId      String          @db.ObjectId
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
-  // Relaciones
-  owner           User             @relation("CarOwner", fields: [ownerId], references: [id])
+  // Relationships
+  owner          User            @relation("CarOwner", fields: [ownerId], references: [id])
   maintenanceLogs MaintenanceLog[]
-  documents       Document[]
-  chatSessions    ChatSession[]
+  documents      Document[]
+  chatSessions   ChatSession[]
 
   @@map("cars")
 }
 
 model MaintenanceLog {
-  id            String            @id @default(auto()) @map("_id") @db.ObjectId
-  carId         String            @db.ObjectId
-  mechanicId    String            @db.ObjectId
-  description   String
-  laborCost     Float
-  totalCost     Float
-  status        MaintenanceStatus @default(IN_PROGRESS)
-  startDate     DateTime          @default(now())
-  estimatedTime Int? // En horas
-  completedDate DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  carId           String            @db.ObjectId
+  mechanicId      String            @db.ObjectId
+  description     String
+  laborCost       Float
+  totalCost       Float
+  status          MaintenanceStatus @default(IN_PROGRESS)
+  startDate       DateTime          @default(now())
+  estimatedTime   Int?
+  completedDate   DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
-  // Relaciones
-  car       Car        @relation(fields: [carId], references: [id])
-  mechanic  User       @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
-  invoice   Invoice?
-  usedParts UsedPart[]
+  // Relationships
+  car             Car               @relation(fields: [carId], references: [id])
+  mechanic        User              @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
+  invoice         Invoice?
+  usedParts       UsedPart[]
 
   @@map("maintenance_logs")
 }
@@ -104,20 +183,20 @@ model Part {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relaciones
+  // Relationships
   usedParts UsedPart[]
 
   @@map("parts")
 }
 
 model UsedPart {
-  id               String @id @default(auto()) @map("_id") @db.ObjectId
-  maintenanceLogId String @db.ObjectId
-  partId           String @db.ObjectId
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  maintenanceLogId String         @db.ObjectId
+  partId           String         @db.ObjectId
   quantity         Int
   unitPrice        Float
 
-  // Relaciones
+  // Relationships
   maintenanceLog MaintenanceLog @relation(fields: [maintenanceLogId], references: [id])
   part           Part           @relation(fields: [partId], references: [id])
 
@@ -130,11 +209,11 @@ model Invoice {
   subtotal         Float
   laborCost        Float
   totalCost        Float
-  mechanicShare    Float // 60%
-  adminShare       Float // 40%
+  mechanicShare    Float
+  adminShare       Float
   createdAt        DateTime @default(now())
 
-  // Relaciones
+  // Relationships
   maintenanceLog MaintenanceLog @relation(fields: [maintenanceLogId], references: [id])
 
   @@map("invoices")
@@ -143,26 +222,27 @@ model Invoice {
 model Document {
   id         String       @id @default(auto()) @map("_id") @db.ObjectId
   carId      String       @db.ObjectId
-  name       String // Display name for the document
+  name       String
   docType    DocumentType
   fileUrl    String
-  fileName   String // Original file name
+  fileName   String
   expiryDate DateTime?
   uploadedAt DateTime     @default(now())
 
-  // Relations
+  // Relationships
   car Car @relation(fields: [carId], references: [id])
 
   @@map("documents")
 }
 
+// Chat models
 model ChatSession {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  carId     String   @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  carId            String            @db.ObjectId
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  // Relaciones
+  // Relationships
   car              Car               @relation(fields: [carId], references: [id])
   userChatSessions UserChatSession[]
   messages         ChatMessage[]
@@ -182,13 +262,13 @@ model UserChatSession {
 }
 
 model ChatMessage {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  chatSessionId String   @db.ObjectId
-  senderId      String   @db.ObjectId
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  chatSessionId String      @db.ObjectId
+  senderId      String      @db.ObjectId
   message       String
-  sentAt        DateTime @default(now())
+  sentAt        DateTime    @default(now())
 
-  // Relaciones
+  // Relationships
   chatSession ChatSession @relation(fields: [chatSessionId], references: [id])
   sender      User        @relation("MessageSender", fields: [senderId], references: [id])
 

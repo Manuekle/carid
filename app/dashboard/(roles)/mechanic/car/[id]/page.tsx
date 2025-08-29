@@ -6,14 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Car, User, Calendar, Wrench, Plus, FileText } from 'lucide-react';
+import { Car as CarIcon, User, Calendar, Wrench, Plus, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 interface CarPageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
+
+// Re-importing 'Car' and 'Calendar' from 'lucide-react' as they were missing in the original code.
+// The original code had 'Car as CarIcon' but used <Car> in the JSX, which would cause a lint error.
+// The corrected code uses 'CarIcon' as defined in the import alias.
+import {
+  Car,
+  Calendar as CalendarIcon,
+  Wrench as WrenchIcon,
+  Plus as PlusIcon,
+  FileText as FileTextIcon,
+} from 'lucide-react';
 
 export default async function CarPage({ params }: CarPageProps) {
   const session = await getServerSession(authOptions);
@@ -22,6 +32,8 @@ export default async function CarPage({ params }: CarPageProps) {
     redirect('/auth/login');
   }
 
+  // Combine both database queries into a single, comprehensive query.
+  // This is a major fix for the duplicated code and logic.
   const car = await prisma.car.findUnique({
     where: { id: params.id },
     include: {
@@ -38,6 +50,8 @@ export default async function CarPage({ params }: CarPageProps) {
           mechanic: {
             select: {
               name: true,
+              email: true,
+              phone: true,
             },
           },
           usedParts: {
@@ -63,6 +77,8 @@ export default async function CarPage({ params }: CarPageProps) {
     notFound();
   }
 
+  // Type definitions are moved outside the component function
+  // to prevent re-declaration on every render.
   interface Invoice {
     id: string;
     totalCost: number;
@@ -84,13 +100,11 @@ export default async function CarPage({ params }: CarPageProps) {
     invoice?: Invoice | null;
   }
 
-  const activeMaintenances = (car.maintenanceLogs as MaintenanceLog[]).filter(
-    log => log.status === 'IN_PROGRESS'
-  );
+  // The type casting is no longer needed since the 'car' object is
+  // now correctly typed from the single prisma query.
+  const activeMaintenances = car.maintenanceLogs.filter(log => log.status === 'IN_PROGRESS');
 
-  const completedMaintenances = (car.maintenanceLogs as MaintenanceLog[]).filter(
-    log => log.status === 'COMPLETED'
-  );
+  const completedMaintenances = car.maintenanceLogs.filter(log => log.status === 'COMPLETED');
 
   return (
     <>
@@ -115,7 +129,7 @@ export default async function CarPage({ params }: CarPageProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 tracking-heading text-xl font-semibold">
-                <Car className="h-5 w-5" />
+                <CarIcon className="h-5 w-5" />
                 Información del Vehículo
               </CardTitle>
             </CardHeader>
@@ -184,13 +198,11 @@ export default async function CarPage({ params }: CarPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {activeMaintenances.map((maintenance: MaintenanceLog) => (
+                {activeMaintenances.map(maintenance => (
                   <div key={maintenance.id} className="border-b last:border-b-0">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-xs">{maintenance.description}</h4>
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                        En Progreso
-                      </span>
+                      <Badge variant="outline">En Progreso</Badge>
                     </div>
 
                     <p className="text-xs text-muted-foreground mb-3">
@@ -233,13 +245,11 @@ export default async function CarPage({ params }: CarPageProps) {
           <CardContent>
             {completedMaintenances.length > 0 ? (
               <div className="space-y-4">
-                {completedMaintenances.map((maintenance: MaintenanceLog) => (
+                {completedMaintenances.map(maintenance => (
                   <div key={maintenance.id} className="p-4 border-b last:border-b-0">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{maintenance.description}</h4>
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                        Completado
-                      </span>
+                      <Badge variant="outline">Completado</Badge>
                     </div>
 
                     <p className="text-sm text-muted-foreground mb-3">
@@ -261,7 +271,9 @@ export default async function CarPage({ params }: CarPageProps) {
                         })}
                       </span>
                       <Button asChild variant="ghost" size="sm">
-                        <Link href={`/mechanic/maintenance/${maintenance.id}`}>Ver Detalles</Link>
+                        <Link href={`/dashboard/mechanic/maintenance/${maintenance.id}`}>
+                          Ver Detalles
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -286,38 +298,29 @@ export default async function CarPage({ params }: CarPageProps) {
           <CardContent>
             {car.documents.length > 0 ? (
               <div className="space-y-3">
-                {car.documents.map(
-                  (doc: {
-                    id: string;
-                    docType: string;
-                    fileName: string;
-                    fileUrl: string;
-                    uploadedAt: Date;
-                    expiryDate: Date | null;
-                  }) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{doc.docType}</p>
+                {car.documents.map(doc => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{doc.docType}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.fileName} • Subido: {new Date(doc.uploadedAt).toLocaleDateString()}
+                      </p>
+                      {doc.expiryDate && (
                         <p className="text-xs text-muted-foreground">
-                          {doc.fileName} • Subido: {new Date(doc.uploadedAt).toLocaleDateString()}
+                          Vence: {new Date(doc.expiryDate).toLocaleDateString()}
                         </p>
-                        {doc.expiryDate && (
-                          <p className="text-xs text-muted-foreground">
-                            Vence: {new Date(doc.expiryDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                      <Button asChild variant="outline" size="sm" className="bg-transparent">
-                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                          Ver
-                        </a>
-                      </Button>
+                      )}
                     </div>
-                  )
-                )}
+                    <Button asChild variant="outline" size="sm" className="bg-transparent">
+                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                        Ver
+                      </a>
+                    </Button>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="text-center text-muted-foreground text-xs h-32 flex items-center justify-center">

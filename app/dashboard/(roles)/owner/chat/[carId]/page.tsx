@@ -9,9 +9,8 @@ import Link from 'next/link';
 import ChatInterface from '@/components/chat/chat-interface';
 
 interface ChatPageProps {
-  params: {
-    carId: string;
-  };
+  params: { carId: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default async function CarChatPage({ params }: ChatPageProps) {
@@ -80,7 +79,7 @@ export default async function CarChatPage({ params }: ChatPageProps) {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">
-              Chat con {activeMaintenance.mechanic.name}
+              Chat con {activeMaintenance.mechanic?.name || 'Mecánico'}
             </h1>
             <p className="text-muted-foreground text-xs">
               {car.brand} {car.model} • {car.licensePlate}
@@ -91,7 +90,11 @@ export default async function CarChatPage({ params }: ChatPageProps) {
         <ChatInterface
           carId={car.id}
           currentUserId={session.user.id}
-          otherUser={activeMaintenance.mechanic}
+          otherUser={{
+            id: activeMaintenance.mechanicId,
+            name: activeMaintenance.mechanic?.name || 'Mecánico',
+            email: activeMaintenance.mechanic?.email || null,
+          }}
         />
       </div>
     </>

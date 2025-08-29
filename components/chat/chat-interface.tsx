@@ -23,8 +23,8 @@ interface ChatInterfaceProps {
   currentUserId: string;
   otherUser: {
     id: string;
-    name: string;
-    email: string;
+    name: string | null;
+    email: string | null;
   };
 }
 
@@ -107,12 +107,16 @@ export default function ChatInterface({ carId, currentUserId, otherUser }: ChatI
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="flex-shrink-0 border-b">
         <CardTitle className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 border border-zinc-200 text-xs">
-            <AvatarFallback>{getUserInitials(otherUser.name)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium text-xs">{otherUser.name}</p>
-            <p className="text-xs text-muted-foreground font-normal">{otherUser.email}</p>
+          <div className="flex items-center space-x-2">
+            <Avatar>
+              <AvatarFallback>{otherUser.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{otherUser.name || 'Usuario'}</p>
+              {otherUser.email && (
+                <p className="text-xs text-muted-foreground">{otherUser.email}</p>
+              )}
+            </div>
           </div>
         </CardTitle>
       </CardHeader>

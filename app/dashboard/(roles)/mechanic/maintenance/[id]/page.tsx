@@ -11,13 +11,14 @@ import Link from 'next/link';
 
 import CompleteMaintenanceButton from '@/components/complete-maintenance-button';
 
-interface MaintenancePageProps {
-  params: {
-    id: string;
-  };
-}
+import { Metadata, ResolvingMetadata } from 'next';
 
-export default async function MaintenancePage({ params }: MaintenancePageProps) {
+type PageProps = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export default async function MaintenancePage({ params }: PageProps) {
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== 'MECHANIC') {
@@ -31,16 +32,22 @@ export default async function MaintenancePage({ params }: MaintenancePageProps) 
         include: {
           owner: {
             select: {
+              id: true,
               name: true,
               email: true,
               phone: true,
             },
           },
+          maintenanceLogs: true,
+          documents: true,
         },
       },
       mechanic: {
         select: {
+          id: true,
           name: true,
+          email: true,
+          phone: true,
         },
       },
       usedParts: {

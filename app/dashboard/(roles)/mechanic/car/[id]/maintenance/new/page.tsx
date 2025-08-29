@@ -24,9 +24,8 @@ interface SelectedPart {
 }
 
 interface NewMaintenancePageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 interface FormData {

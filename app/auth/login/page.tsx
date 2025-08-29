@@ -27,28 +27,44 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // Primero intentar iniciar sesión
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
+      console.log('SignIn result:', result);
+
+      // Si hay un error, manejarlo
       if (result?.error) {
-        setError('Credenciales inválidas');
-      } else {
-        // Get session to determine redirect based on role
-        const session = await getSession();
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/dashboard/admin');
-        } else if (session?.user?.role === 'MECHANIC') {
-          router.push('/dashboard/mechanic');
+        // Handle specific error messages from the server
+        if (result.error === 'CredentialsSignin') {
+          setError('Credenciales inválidas');
+        } else if (result.error.includes('approved')) {
+          // If the account needs approval
+          router.push('/auth/pending-approval');
+          return;
         } else {
-          router.push('/dashboard/owner');
+          setError('Error al iniciar sesión: ' + result.error);
+          console.error('Sign in error:', result.error);
         }
+        setIsLoading(false);
+        return;
       }
+
+      // Si no hay error, forzar una recarga para asegurar que la sesión se establezca
+      if (result?.url) {
+        window.location.href = result.url;
+        return;
+      }
+
+      // Si llegamos aquí, hubo un problema inesperado
+      setError('Error inesperado al iniciar sesión');
+      console.error('Unexpected sign in result:', result);
     } catch (error) {
-      setError('Error al iniciar sesión');
-    } finally {
+      console.error('Login error:', error);
+      setError('Error inesperado al iniciar sesión');
       setIsLoading(false);
     }
   };

@@ -6,9 +6,8 @@ import { prisma } from '@/lib/prisma';
 import ChatInterface from '@/components/chat/chat-interface';
 
 interface MechanicChatPageProps {
-  params: {
-    carId: string;
-  };
+  params: { carId: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default async function MechanicChatPage({ params }: MechanicChatPageProps) {
@@ -49,7 +48,7 @@ export default async function MechanicChatPage({ params }: MechanicChatPageProps
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">
-              Chat con {maintenance.car.owner.name}
+              Chat con {maintenance.car.owner.name || 'Propietario'}
             </h1>
             <p className="text-muted-foreground text-xs">
               {maintenance.car.brand} {maintenance.car.model} • {maintenance.car.licensePlate}
@@ -60,7 +59,11 @@ export default async function MechanicChatPage({ params }: MechanicChatPageProps
         <ChatInterface
           carId={maintenance.car.id}
           currentUserId={session.user.id}
-          otherUser={maintenance.car.owner}
+          otherUser={{
+            id: maintenance.car.ownerId,
+            name: maintenance.car.owner.name,
+            email: maintenance.car.owner.email,
+          }}
         />
       </div>
     </>
