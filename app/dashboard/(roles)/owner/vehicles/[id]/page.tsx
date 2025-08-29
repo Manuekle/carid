@@ -499,7 +499,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                   size="sm"
                   className="mt-4 "
                   onClick={() => {
-                    router.push(`/dashboard/owner/vehicles/${car.id}/documents`);
+                    router.push(`/dashboard/owner/vehicles/${car.id}/upload`);
                   }}
                 >
                   Subir Documento
