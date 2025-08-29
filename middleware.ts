@@ -10,18 +10,26 @@ export default withAuth(
   async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
+    console.log(`Middleware: ${pathname}`); // Para debugging en Vercel
+
     // Verificar si es una ruta pública
     const isPublicPath = publicPaths.some(
       path => pathname === path || pathname.startsWith(`${path}/`)
     );
 
+    // Obtener el token una sola vez para evitar múltiples llamadas
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    console.log(`Token exists: ${!!token}, Role: ${token?.role}, Approved: ${token?.isApproved}`);
+
     // Manejar acceso a páginas de autenticación
     if (pathname.startsWith('/auth/')) {
-      const token = await getToken({ req });
-
       // Si el usuario ya está autenticado, redirigir según su rol
-      if (token) {
-        let targetPath = '/';
+      if (token && token.isApproved) {
+        let targetPath = '/dashboard';
         const userRole = token.role as UserRole;
 
         // Redirigir según el rol del usuario
@@ -37,7 +45,15 @@ export default withAuth(
             break;
         }
 
+        console.log(`Redirecting authenticated user to: ${targetPath}`);
         return NextResponse.redirect(new URL(targetPath, req.url));
+      }
+
+      // Si es mecánico no aprobado, solo permitir pending-approval
+      if (token && token.role === UserRole.MECHANIC && !token.isApproved) {
+        if (pathname !== '/auth/pending-approval') {
+          return NextResponse.redirect(new URL('/auth/pending-approval', req.url));
+        }
       }
 
       // Si no está autenticado, permitir el acceso a auth
@@ -49,19 +65,19 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    // Obtener el token solo si es necesario (para rutas protegidas)
-    const token = await getToken({ req });
-    const userRole = token?.role as UserRole;
-
     // Si no hay token, redirigir a login
     if (!token) {
+      console.log('No token found, redirecting to login');
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
+
+    const userRole = token.role as UserRole;
 
     // Verificar si el mecánico está aprobado
     if (userRole === UserRole.MECHANIC && !token.isApproved) {
       // Solo permitir acceso a la página de aprobación pendiente
       if (pathname !== '/auth/pending-approval') {
+        console.log('Mechanic not approved, redirecting to pending approval');
         return NextResponse.redirect(new URL('/auth/pending-approval', req.url));
       }
       return NextResponse.next();
@@ -93,6 +109,7 @@ export default withAuth(
           targetPath = '/auth/login';
           break;
       }
+      console.log(`Root redirect to: ${targetPath}`);
       return NextResponse.redirect(new URL(targetPath, req.url));
     }
 
@@ -113,6 +130,7 @@ export default withAuth(
           targetPath = '/auth/login';
           break;
       }
+      console.log(`Dashboard redirect to: ${targetPath}`);
       return NextResponse.redirect(new URL(targetPath, req.url));
     }
 
@@ -196,6 +214,11 @@ export default withAuth(
           return true;
         }
 
+        // Permitir rutas de autenticación
+        if (pathname.startsWith('/auth/')) {
+          return true;
+        }
+
         // Requerir autenticación para rutas protegidas
         return !!token;
       },
@@ -205,7 +228,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    // Proteger todas las rutas excepto las públicas
+    // Proteger todas las rutas excepto las públicas y estáticas
     '/((?!_next/static|_next/image|favicon.ico|icons|api/auth).*)',
   ],
 };

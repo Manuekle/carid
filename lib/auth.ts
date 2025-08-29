@@ -139,20 +139,21 @@ export const authOptions: NextAuthOptions = {
           if (!user) {
             await incrementLoginAttempts(credentials.email);
             if (req) await logAuthAttempt(credentials.email, false, req);
-            return null;
+            throw new Error('Credenciales inválidas');
           }
 
           if (!user.password) {
             await incrementLoginAttempts(credentials.email);
             if (req) await logAuthAttempt(credentials.email, false, req);
-            return null;
+            throw new Error('Credenciales inválidas');
           }
+
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
             await incrementLoginAttempts(credentials.email);
             if (req) await logAuthAttempt(credentials.email, false, req);
-            return null;
+            throw new Error('Credenciales inválidas');
           }
 
           // Check if mechanic is approved
@@ -202,6 +203,13 @@ export const authOptions: NextAuthOptions = {
         session.user.isApproved = token.isApproved;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Permite redirects relativos o a la misma URL base
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Permite redirects a la URL base
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   events: {

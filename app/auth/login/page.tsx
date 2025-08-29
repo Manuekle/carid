@@ -27,7 +27,6 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Primero intentar iniciar sesión
       const result = await signIn('credentials', {
         email,
         password,
@@ -36,13 +35,13 @@ export default function LoginPage() {
 
       console.log('SignIn result:', result);
 
-      // Si hay un error, manejarlo
       if (result?.error) {
-        // Handle specific error messages from the server
         if (result.error === 'CredentialsSignin') {
           setError('Credenciales inválidas');
         } else if (result.error.includes('approved')) {
-          // If the account needs approval
+          router.push('/auth/pending-approval');
+          return;
+        } else if (result.error === 'PENDING_APPROVAL') {
           router.push('/auth/pending-approval');
           return;
         } else {
@@ -53,15 +52,18 @@ export default function LoginPage() {
         return;
       }
 
-      // Si no hay error, forzar una recarga para asegurar que la sesión se establezca
-      if (result?.url) {
-        window.location.href = result.url;
+      // Si el login fue exitoso
+      if (result?.ok) {
+        // Forzar actualización de la sesión
+        await router.refresh();
+        router.push('/dashboard');
         return;
       }
 
       // Si llegamos aquí, hubo un problema inesperado
       setError('Error inesperado al iniciar sesión');
       console.error('Unexpected sign in result:', result);
+      setIsLoading(false);
     } catch (error) {
       console.error('Login error:', error);
       setError('Error inesperado al iniciar sesión');
