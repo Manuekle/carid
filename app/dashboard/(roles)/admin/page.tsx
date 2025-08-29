@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Wrench, Users, TrendingUp } from 'lucide-react';
 import { LoadingPage } from '@/components/ui/loading';
+import { useSession } from 'next-auth/react';
 
 interface DailyStats {
   completedMaintenances: number;
@@ -22,6 +23,7 @@ interface PendingMechanic {
 }
 
 export default function AdminDashboard() {
+  const { data: session } = useSession();
   const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
   const [pendingMechanics, setPendingMechanics] = useState<PendingMechanic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export default function AdminDashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [session]);
 
   if (loading) {
     return <LoadingPage />;
@@ -60,7 +62,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-card">Dashboard Administrativo</h1>
+        <h1 className="text-2xl font-semibold tracking-card">Bienvenido, {session?.user.name}</h1>
         <p className="text-muted-foreground text-xs">
           Resumen de actividades y estadísticas del día
         </p>
@@ -154,7 +156,9 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Acciones Rápidas</CardTitle>
+            <CardTitle className="text-xl font-semibold tracking-heading">
+              Acciones Rápidas
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-xs">
@@ -168,7 +172,9 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Resumen del Sistema</CardTitle>
+            <CardTitle className="text-xl font-semibold tracking-heading">
+              Resumen del Sistema
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-xs">

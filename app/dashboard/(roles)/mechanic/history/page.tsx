@@ -127,7 +127,7 @@ export default function MechanicHistoryPage() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-medium">
+                      <h4 className="font-medium text-xs">
                         {job.car.brand} {job.car.model} ({job.car.year})
                       </h4>
                       <Badge variant={job.status === 'COMPLETED' ? 'default' : 'secondary'}>
@@ -146,22 +146,22 @@ export default function MechanicHistoryPage() {
                   </div>
                   <div className="text-right space-y-2">
                     <div>
-                      <p className="font-medium">${job.totalCost.toLocaleString()}</p>
+                      <p className="font-medium text-xs">${job.totalCost.toLocaleString()}</p>
                       {job.invoice && (
-                        <p className="text-xs text-green-600">
+                        <p className="text-xs ">
                           Tu parte: ${job.invoice.mechanicShare.toLocaleString()}
                         </p>
                       )}
                     </div>
                     <Button asChild variant="outline" size="sm" className="bg-transparent">
-                      <Link href={`/mechanic/maintenance/${job.id}`}>Ver Detalles</Link>
+                      <Link href={`/dashboard/mechanic/maintenance/${job.id}`}>Ver Detalles</Link>
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center h-52 flex items-center justify-center">
               <p className="text-muted-foreground text-xs">No tienes trabajos registrados aún</p>
             </div>
           )}

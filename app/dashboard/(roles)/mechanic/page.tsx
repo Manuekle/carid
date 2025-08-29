@@ -70,8 +70,12 @@ export default function MechanicDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-heading">Dashboard Mecánico</h1>
-        <p className="text-muted-foreground text-xs">Bienvenido, {session?.user.name}</p>
+        <h1 className="text-2xl font-semibold tracking-heading">
+          Bienvenido, {session?.user.name}
+        </h1>
+        <p className="text-muted-foreground text-xs">
+          Puedes comenzar a escanear un vehículo para comenzar un mantenimiento
+        </p>
       </div>
 
       {/* Quick Actions */}
@@ -162,7 +166,7 @@ export default function MechanicDashboard() {
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div>
-                    <h4 className="font-medium">
+                    <h4 className="font-medium text-xs">
                       {job.car.brand} {job.car.model} ({job.car.year})
                     </h4>
                     <p className="text-xs text-muted-foreground">{job.description}</p>

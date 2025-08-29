@@ -253,7 +253,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
       <div className="mb-8" id="vehicle-qr-code">
         <Card>
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div>
                 <CardTitle className="text-2xl font-semibold tracking-heading">
                   Código QR del Vehículo
@@ -261,16 +261,6 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                 <CardDescription className="text-muted-foreground">
                   Escanea este código para acceder rápidamente a la información del vehículo
                 </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={copyQRToken}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copiar Token
-                </Button>
-                <Button variant="outline" size="sm" onClick={downloadQRCode}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Descargar
-                </Button>
               </div>
             </div>
           </CardHeader>
@@ -287,7 +277,19 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                   />
                 </div>
                 <div className="text-center space-y-2">
-                  <p className="text-sm font-medium">Token: {car.qrCode}</p>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <p className="text-xs text-muted-foreground font-mono bg-gray-100 px-4 py-2 rounded-md">
+                      {car.qrCode}
+                    </p>
+                    <div className="flex flex-row justify-center gap-2 w-full">
+                      <Button variant="outline" size="sm" onClick={copyQRToken}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={downloadQRCode}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Este token identifica únicamente tu vehículo
                   </p>
@@ -316,10 +318,9 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
               </CardDescription>
               <p className="text-xs text-muted-foreground mt-1">VIN: {car.vin}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
+            <div className="flex flex-row justify-center gap-2">
+              {/* <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   const qrElement = document.getElementById('vehicle-qr-code');
                   if (qrElement) {
@@ -327,10 +328,9 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                   }
                 }}
               >
-                <QrCodeIcon className="h-4 w-4 mr-2" />
                 Mostrar Código QR
-              </Button>
-              <Button size="sm" asChild>
+              </Button> */}
+              <Button asChild>
                 <Link href={`/dashboard/owner/vehicles/${car.id}/edit`}>Editar Vehículo</Link>
               </Button>
             </div>
@@ -494,7 +494,14 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
             ) : (
               <div className="text-center h-32 flex flex-col   items-center justify-center">
                 <p className="text-xs text-muted-foreground">No hay documentos cargados</p>
-                <Button variant="outline" size="sm" className="mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 "
+                  onClick={() => {
+                    router.push(`/dashboard/owner/vehicles/${car.id}/documents`);
+                  }}
+                >
                   Subir Documento
                 </Button>
               </div>

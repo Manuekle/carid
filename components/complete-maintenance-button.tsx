@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,12 +44,15 @@ export default function CompleteMaintenanceButton({
 
       if (response.ok) {
         router.refresh();
+        toast.success('Mantenimiento completado exitosamente');
       } else {
         const data = await response.json();
         setError(data.error);
+        toast.error(data.error);
       }
     } catch (error) {
       setError('Error al completar el mantenimiento');
+      toast.error('Error al completar el mantenimiento');
     } finally {
       setIsLoading(false);
     }
@@ -60,19 +63,17 @@ export default function CompleteMaintenanceButton({
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Confirmar finalización?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-semibold tracking-heading">
+              ¿Confirmar finalización?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
               ¿Estás seguro de que quieres marcar este mantenimiento como completado? Esta acción no
               se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmComplete}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
+            <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmComplete} className="text-xs">
               Marcar como Completado
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -80,11 +81,11 @@ export default function CompleteMaintenanceButton({
       </AlertDialog>
       <div className="space-y-4">
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="text-xs">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <Button onClick={handleComplete} disabled={isLoading} variant="default">
+        <Button onClick={handleComplete} disabled={isLoading} variant="default" className="text-xs">
           {isLoading ? 'Completando...' : 'Completar Mantenimiento'}
         </Button>
       </div>

@@ -63,8 +63,10 @@ export default function OwnerDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-heading">Mis Vehículos</h1>
-          <p className="text-muted-foreground text-xs">Bienvenido, {session?.user.name}</p>
+          <h1 className="text-2xl font-semibold tracking-heading">
+            Bienvenido, {session?.user.name}
+          </h1>
+          <p className="text-muted-foreground text-xs">Gestiona tus vehículos y mantenimientos</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/owner/vehicles/add">Agregar Vehículo</Link>
@@ -112,7 +114,6 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
-              <Car className="h-5 w-5" />
               Gestionar Vehículos
             </CardTitle>
             <CardDescription>Ver y administrar todos tus vehículos</CardDescription>
@@ -127,7 +128,6 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
-              <FileText className="h-5 w-5" />
               Documentos
             </CardTitle>
             <CardDescription>Subir y gestionar documentos de tus vehículos</CardDescription>
@@ -142,7 +142,6 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
-              <MessageSquare className="h-5 w-5" />
               Chat con Mecánicos
             </CardTitle>
             <CardDescription>Comunicarte con los mecánicos de tus vehículos</CardDescription>
@@ -198,8 +197,9 @@ export default function OwnerDashboard() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">No tienes vehículos registrados aún</p>
+              <p className="text-muted-foreground mb-4 text-xs">
+                No tienes vehículos registrados aún
+              </p>
               <Button asChild>
                 <Link href="/dashboard/owner/vehicles/add">Agregar tu primer vehículo</Link>
               </Button>

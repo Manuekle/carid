@@ -128,14 +128,12 @@ export default function AddVehiclePage() {
         setFormData(INITIAL_FORM_DATA);
 
         toast.success('¡Vehículo agregado exitosamente!', {
-          description: `${formData.brand} ${formData.model} - ${formData.licensePlate}`,
           duration: 4000,
         });
       } else {
         const errorMessage = data.error || 'Error al agregar el vehículo';
         setError(errorMessage);
         toast.error('Error al agregar vehículo', {
-          description: errorMessage,
           duration: 5000,
         });
       }
@@ -143,7 +141,6 @@ export default function AddVehiclePage() {
       const errorMessage = 'Error de conexión al agregar vehículo';
       setError(errorMessage);
       toast.error('Error de conexión', {
-        description: 'No se pudo conectar con el servidor',
         duration: 5000,
       });
       console.error('Error:', error);
@@ -197,7 +194,7 @@ export default function AddVehiclePage() {
       }
     } catch (error) {
       toast.error('Error al descargar', {
-        description: 'No se pudo descargar el código QR',
+        duration: 5000,
       });
     }
   };
@@ -208,20 +205,13 @@ export default function AddVehiclePage() {
     try {
       await navigator.clipboard.writeText(createdVehicle.qrCode);
       toast.success('Token QR copiado al portapapeles', {
-        description: 'Puedes usar este token para identificar el vehículo',
+        duration: 5000,
       });
     } catch (error) {
       toast.error('Error al copiar', {
-        description: 'No se pudo copiar el token al portapapeles',
+        duration: 5000,
       });
     }
-  };
-
-  const handleAddAnother = () => {
-    setCreatedVehicle(null);
-    setFormData(INITIAL_FORM_DATA);
-    setError('');
-    toast.info('Listo para agregar otro vehículo');
   };
 
   // Mostrar página de éxito con QR
@@ -250,8 +240,8 @@ export default function AddVehiclePage() {
               <p className="text-sm text-muted-foreground">
                 Placa: {createdVehicle.licensePlate} • Color: {createdVehicle.color}
               </p>
-              <p className="text-xs text-muted-foreground font-mono bg-gray-100 p-2 rounded">
-                Token: {createdVehicle.qrCode}
+              <p className="text-xs text-muted-foreground font-mono bg-gray-100 px-4 py-2 rounded-md">
+                {createdVehicle.qrCode}
               </p>
             </div>
 
@@ -285,7 +275,7 @@ export default function AddVehiclePage() {
                 onClick={() => router.push('/dashboard/owner/vehicles')}
                 className="flex items-center gap-2"
               >
-                volver
+                Volver
               </Button>
             </div>
           </CardContent>
@@ -299,14 +289,14 @@ export default function AddVehiclePage() {
     <div className="max-w-2xl mx-auto space-y-8 p-4">
       <div className="flex items-center space-x-2">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Agregar Nuevo Vehículo</h1>
+          <h1 className="text-2xl font-semibold tracking-heading">Agregar Nuevo Vehículo</h1>
           <p className="text-sm text-muted-foreground">Registra un nuevo vehículo en tu cuenta</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-semibold tracking-tight">
+          <CardTitle className="text-xl font-semibold tracking-card">
             Información del Vehículo
           </CardTitle>
           <CardDescription className="text-sm">

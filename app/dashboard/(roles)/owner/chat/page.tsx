@@ -117,10 +117,9 @@ export default function OwnerChatPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="text-center py-12">
-            <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tienes vehículos registrados</h3>
-            <p className="text-muted-foreground mb-6">
+          <CardContent className="text-center h-96 flex flex-col justify-center items-center">
+            <h3 className="text-xs">No tienes vehículos registrados</h3>
+            <p className="text-xs text-muted-foreground mb-6">
               Necesitas registrar un vehículo para poder chatear con mecánicos
             </p>
             <Button asChild>
