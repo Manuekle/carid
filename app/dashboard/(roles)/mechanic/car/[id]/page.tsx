@@ -293,7 +293,7 @@ export default async function CarPage({ params }: CarPageProps) {
                     fileName: string;
                     fileUrl: string;
                     uploadedAt: Date;
-                    expiryDate?: Date;
+                    expiryDate: Date | null;
                   }) => (
                     <div
                       key={doc.id}

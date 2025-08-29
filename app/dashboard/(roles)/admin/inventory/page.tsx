@@ -10,13 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+  DrawerFooter,
+} from '@/components/ui/drawer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Package, Plus, Edit, Trash2, AlertTriangle, Search } from 'lucide-react';
+import { Package, Edit, Trash2, AlertTriangle, Search } from 'lucide-react';
 import { LoadingPage } from '@/components/ui/loading';
 import Image from 'next/image';
 
@@ -83,7 +85,8 @@ export default function InventoryPage() {
       } else {
         setError('Error al cargar el inventario');
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error loading inventory:', error);
       setError('Error al cargar el inventario');
     } finally {
       setIsLoading(false);
@@ -121,7 +124,8 @@ export default function InventoryPage() {
         const data = await response.json();
         setError(data.error);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error saving part:', error);
       setError('Error al guardar el repuesto');
     }
   };
@@ -139,7 +143,8 @@ export default function InventoryPage() {
       } else {
         setError('Error al eliminar el repuesto');
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error deleting part:', error);
       setError('Error al eliminar el repuesto');
     }
   };
@@ -176,124 +181,127 @@ export default function InventoryPage() {
     <>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between sm:flex-row gap-4 flex-col sm:items-start">
           <div>
             <h1 className="text-2xl font-semibold tracking-heading">Gestión de Inventario</h1>
             <p className="text-muted-foreground text-xs">
               Administra el inventario de repuestos del taller
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+          <Drawer open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DrawerTrigger asChild>
               <Button onClick={resetForm}>Agregar Repuesto</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-2xl tracking-heading">
-                  {editingPart ? 'Editar Repuesto' : 'Agregar Repuesto'}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingPart
-                    ? 'Modifica la información del repuesto'
-                    : 'Completa la información del nuevo repuesto'}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+            </DrawerTrigger>
+            <DrawerContent>
+              <div className="mx-auto w-full max-w-sm">
+                <DrawerHeader>
+                  <DrawerTitle className="text-2xl tracking-heading font-semibold">
+                    {editingPart ? 'Editar Repuesto' : 'Agregar Repuesto'}
+                  </DrawerTitle>
+                  <DrawerDescription className="text-xs">
+                    {editingPart
+                      ? 'Modifica la información del repuesto'
+                      : 'Completa la información del nuevo repuesto'}
+                  </DrawerDescription>
+                </DrawerHeader>
+                <form id="inventory-form" onSubmit={handleSubmit} className="p-4 space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nombre del Repuesto</Label>
-                  <Input
-                    id="name"
-                    className="text-xs"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    placeholder="Filtro de aceite"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descripción</Label>
-                  <Textarea
-                    id="description"
-                    className="text-xs"
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Descripción detallada del repuesto"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Precio (COP)</Label>
+                    <Label htmlFor="name">Nombre del Repuesto</Label>
                     <Input
-                      id="price"
+                      id="name"
                       className="text-xs"
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={formData.price}
-                      onChange={e => setFormData({ ...formData, price: e.target.value })}
+                      value={formData.name}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
                       required
-                      placeholder="25000"
+                      placeholder="Filtro de aceite"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="stock">Stock</Label>
-                    <Input
-                      id="stock"
+                    <Label htmlFor="description">Descripción</Label>
+                    <Textarea
+                      id="description"
                       className="text-xs"
-                      type="number"
-                      min="0"
-                      value={formData.stock}
-                      onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                      required
-                      placeholder="50"
+                      value={formData.description}
+                      onChange={e => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Descripción detallada del repuesto"
+                      rows={3}
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="photo">Foto del Repuesto</Label>
-                  <Input
-                    id="photo"
-                    className="text-xs"
-                    type="file"
-                    accept="image/*"
-                    onChange={e => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Opcional. Formatos: JPG, PNG, WebP
-                  </p>
-                </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Precio (COP)</Label>
+                      <Input
+                        id="price"
+                        className="text-xs"
+                        type="number"
+                        min="0"
+                        step="100"
+                        value={formData.price}
+                        onChange={e => setFormData({ ...formData, price: e.target.value })}
+                        required
+                        placeholder="25000"
+                      />
+                    </div>
 
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">
+                    <div className="space-y-2">
+                      <Label htmlFor="stock">Stock</Label>
+                      <Input
+                        id="stock"
+                        className="text-xs"
+                        type="number"
+                        min="0"
+                        value={formData.stock}
+                        onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                        required
+                        placeholder="50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="photo">Foto del Repuesto</Label>
+                    <Input
+                      id="photo"
+                      className="text-xs"
+                      type="file"
+                      accept="image/*"
+                      onChange={e =>
+                        setFormData({ ...formData, photo: e.target.files?.[0] || null })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Opcional. Formatos: JPG, PNG, WebP
+                    </p>
+                  </div>
+                </form>
+                <DrawerFooter>
+                  <Button type="submit" form="inventory-form">
                     {editingPart ? 'Actualizar' : 'Agregar'}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsAddDialogOpen(false);
-                      setEditingPart(null);
-                      resetForm();
-                    }}
-                    className="bg-transparent"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+                  <DrawerClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingPart(null);
+                        resetForm();
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
 
         {/* Low Stock Alert */}
@@ -429,23 +437,17 @@ export default function InventoryPage() {
         </div>
 
         {filteredParts.length === 0 && !isLoading && (
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">
+          <Card className="text-center flex flex-col gap-1 h-64 items-center justify-center">
+            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+            <h3 className="text-xs font-medium">
               {searchTerm ? 'No se encontraron repuestos' : 'No hay repuestos en el inventario'}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-xs text-muted-foreground">
               {searchTerm
                 ? 'Intenta con otros términos de búsqueda'
                 : 'Comienza agregando repuestos al inventario'}
             </p>
-            {!searchTerm && (
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar Primer Repuesto
-              </Button>
-            )}
-          </div>
+          </Card>
         )}
       </div>
     </>

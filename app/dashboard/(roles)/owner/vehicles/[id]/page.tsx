@@ -413,7 +413,9 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                       <DrawerTitle className="text-2xl font-semibold tracking-heading">
                         Editar Vehículo
                       </DrawerTitle>
-                      <DrawerDescription>Actualiza la información del vehículo</DrawerDescription>
+                      <DrawerDescription className="text-xs">
+                        Actualiza la información del vehículo
+                      </DrawerDescription>
                     </DrawerHeader>
                     <form onSubmit={handleSubmit}>
                       <div className="p-4 pb-0">

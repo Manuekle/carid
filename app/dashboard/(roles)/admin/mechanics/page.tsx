@@ -160,15 +160,6 @@ export default function MechanicsPage() {
                   <p className="text-muted-foreground text-xs">
                     No hay mecánicos pendientes de aprobación
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.refresh()}
-                    className="mt-2"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Actualizar
-                  </Button>
                 </div>
               </div>
             )}
