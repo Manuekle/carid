@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Car, CarFront } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { LoadingPage } from '@/components/ui/loading';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -32,15 +33,7 @@ export default function HomePage() {
   }, [session, status, router]);
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="relative">
-            <Car className="h-8 w-8 text-blue-500 mx-auto animate-pulse" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   if (session) {
