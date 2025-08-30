@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -196,7 +195,7 @@ export default function AdminTransfersPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-semibold">{stats.total}</div>
           </CardContent>
         </Card>
 
@@ -206,7 +205,7 @@ export default function AdminTransfersPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="text-2xl font-semibold">{stats.pending}</div>
           </CardContent>
         </Card>
 
@@ -216,7 +215,7 @@ export default function AdminTransfersPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="text-2xl font-semibold">{stats.completed}</div>
           </CardContent>
         </Card>
 
@@ -226,7 +225,7 @@ export default function AdminTransfersPage() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.cancelled}</div>
+            <div className="text-2xl font-semibold">{stats.cancelled}</div>
           </CardContent>
         </Card>
       </div>
@@ -244,7 +243,7 @@ export default function AdminTransfersPage() {
 
             <TabsContent value={activeTab} className="mt-6">
               {filterTransfers(activeTab).length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center text-xs py-8 text-gray-500">
                   No hay traspasos en esta categoría
                 </div>
               ) : (

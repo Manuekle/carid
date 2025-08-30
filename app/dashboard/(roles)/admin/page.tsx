@@ -129,7 +129,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.dailyRevenue)}</div>
+            <div className="text-2xl font-semibold">{formatCurrency(stats.dailyRevenue)}</div>
             <p className="text-xs text-muted-foreground">40% de las facturas del día</p>
           </CardContent>
         </Card>
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.todayRepairs}</div>
+            <div className="text-2xl font-semibold">{stats.todayRepairs}</div>
             <p className="text-xs text-muted-foreground">
               {stats.todayRepairs > 0 ? 'En progreso' : 'Sin reparaciones hoy'}
             </p>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <div className="text-2xl font-semibold">{stats.activeUsers}</div>
             <p className="text-xs text-muted-foreground">
               {stats.activeUsers > 0 ? 'Conectados recientemente' : 'Sin usuarios activos'}
             </p>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.registeredVehicles}</div>
+            <div className="text-2xl font-semibold">{stats.registeredVehicles}</div>
             <p className="text-xs text-muted-foreground">
               {stats.completedRepairs} reparaciones completadas
             </p>

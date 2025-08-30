@@ -1,23 +1,25 @@
 'use client';
 
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { TrendingUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LineChart, Line, XAxis, CartesianGrid, LabelList } from 'recharts';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from 'recharts';
-import { ChartContainer } from './ui/chart';
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
 
-type DataPoint = {
-  date: string;
-  revenue: number;
-};
+type DataPoint = { date: string; revenue: number };
 
 interface RevenueChartProps {
   data: DataPoint[];
@@ -26,107 +28,94 @@ interface RevenueChartProps {
   className?: string;
 }
 
+const parseDate = (dateString: string): Date => {
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
+
 export function RevenueChart({ data, title, description, className }: RevenueChartProps) {
-  // Format data for the chart
-  const chartData = data.map(item => ({
-    name: item.date,
-    revenue: item.revenue,
-  }));
+  const chartData = data.map(item => {
+    const date = parseDate(item.date);
+    return {
+      name: format(date, 'MMM', { locale: es }),
+      fullDate: format(date, 'MMMM yyyy', { locale: es }),
+      revenue: item.revenue,
+    };
+  });
 
-  // Calculate percentage change (example: you can replace with real calculation)
-  const percentageChange = 5.2;
-
-  interface TooltipProps {
-    active?: boolean;
-    payload?: Array<{
-      value: number;
-      name: string;
-      payload: DataPoint;
-    }>;
-    label?: string;
-  }
-
-  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      const value = payload[0].value as number;
-      return (
-        <div className="bg-background border border-border rounded-lg shadow-lg p-3 text-xs">
-          <p className="font-medium text-foreground mb-1">{label}</p>
-          <div className="flex items-center justify-between min-w-[120px]">
-            <div className="flex items-center">
-              <span className="w-2 h-2 rounded-full bg-primary mr-2" />
-              <span className="text-muted-foreground">Ingresos</span>
-            </div>
-            <span className="font-medium text-foreground ml-4">
-              ${value.toLocaleString('es-ES')}
-            </span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  const percentageChange = 5.2; // Replace with real calculation
 
   return (
     <Card className={className}>
-      <CardHeader className="">
+      <CardHeader>
         <CardTitle className="text-xl font-semibold tracking-heading">{title}</CardTitle>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
         <ChartContainer
-          config={{
-            revenue: {
-              label: 'Ingresos',
-              color: 'hsl(var(--primary))',
-            },
-          }}
           className="aspect-auto h-[250px] w-full"
+          config={{ revenue: { label: 'Ingresos', color: 'var(--chart-1)' } }}
         >
-          <LineChart data={chartData}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--muted))"
-              vertical={true}
-              horizontal={true}
-              strokeOpacity={0.2}
-            />
-            <ReferenceLine y={0} stroke="hsl(var(--muted))" strokeWidth={1} strokeOpacity={0.5} />
+          <LineChart data={chartData} margin={{ top: 20, left: 12, right: 12 }}>
+            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               tickLine={false}
-              axisLine={true}
-              tickMargin={4}
-              tickFormatter={value => value}
+              axisLine={false}
+              tickMargin={8}
+              tick={{ fontSize: 12 }}
             />
-            <YAxis
-              tickFormatter={value => `${value.toLocaleString()}`}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              tickLine={false}
-              axisLine={true}
-              width={60}
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="line"
+                  className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
+                  labelClassName="text-sm font-medium text-muted-foreground"
+                />
+              }
+              formatter={(value: any, name: string, props: any) => {
+                // Get the actual revenue value from the payload
+                const revenue = props?.payload?.revenue ?? value;
+                return [
+                  <span key="value" className="text-foreground">
+                    ${Number(revenue).toLocaleString('es-ES')}
+                  </span>,
+                  <span key="label" className="text-muted-foreground">
+                    Ingresos totales
+                  </span>,
+                ];
+              }}
+              labelFormatter={(label, payload) => {
+                return payload?.[0]?.payload?.fullDate || label || '';
+              }}
             />
-            <Tooltip content={<CustomTooltip />} />
             <Line
-              type="monotone"
               dataKey="revenue"
-              stroke="hsl(var(--primary))"
+              type="natural"
+              stroke="#000"
               strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6 }}
-            />
+              dot={{ fill: '#000', strokeWidth: 2, r: 4, stroke: '#fff' }}
+              activeDot={{ r: 6, fill: '#000', stroke: '#fff', strokeWidth: 2 }}
+            >
+              <LabelList
+                dataKey="revenue"
+                position="top"
+                offset={12}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(value: React.ReactNode) => `$${Number(value).toLocaleString('es-ES')}`}
+              />
+            </Line>
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <div className="px-4 pt-4 border-t">
-        <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-muted-foreground">Tendencia:</span>
-          <span className="flex items-center font-medium text-green-600">
-            +{percentageChange}% <TrendingUp className="h-3 w-3 ml-0.5" />
-          </span>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 leading-none font-medium">
+          Tendencia de {percentageChange}% <TrendingUp className="h-4 w-4" />
         </div>
-      </div>
+        <div className="text-muted-foreground leading-none">Últimos {data.length} meses</div>
+      </CardFooter>
     </Card>
   );
 }
