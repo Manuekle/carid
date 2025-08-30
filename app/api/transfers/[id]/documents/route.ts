@@ -72,7 +72,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Subir archivo
     const timestamp = Date.now();
     const fileName = `${timestamp}-${file.name}`;
-    const blob = await put(`transfers/${transferId}/${fileName}`, file, {
+    const blob = await put(`documents/${transferId}/${fileName}`, file, {
       access: 'public',
     });
 
