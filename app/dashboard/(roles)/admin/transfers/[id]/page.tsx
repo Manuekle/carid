@@ -375,8 +375,8 @@ export default function AdminTransferDetailsPage({ params }: { params: { id: str
                         <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="truncate">{doc.fileName}</span>
                         {doc.isVerified && (
-                          <Badge 
-                            variant="default" 
+                          <Badge
+                            variant="default"
                             className="ml-auto px-2 py-0.5 text-[10px] bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800"
                           >
                             Verificado
