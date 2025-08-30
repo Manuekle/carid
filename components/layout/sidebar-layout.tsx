@@ -2,10 +2,10 @@
 
 import { navLinkGroups } from '@/config/navigation';
 import type { Role } from '@/types/navigation';
-import { ChevronDown, LogOut, Settings, Car, CarFront } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, Car, CarFront, ArrowLeft, ChevronLeft } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -343,6 +343,13 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 px-4 font-sans">
             <SidebarTrigger />
+            <button
+              onClick={() => window.history.back()}
+              className="w-auto flex items-center p-2 rounded-lg hover:bg-sidebar-accent transition-colors"
+              aria-label="Volver atrás"
+            >
+              <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
             <Breadcrumb>
               <BreadcrumbList>
                 {breadcrumbLinks.map((link, index) => (
