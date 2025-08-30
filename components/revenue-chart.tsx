@@ -1,7 +1,5 @@
 'use client';
 
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, CartesianGrid, LabelList } from 'recharts';
 import {
@@ -26,50 +24,39 @@ interface RevenueChartProps {
   title: string;
   description?: string;
   className?: string;
+  period?: 'week' | 'month' | 'year';
 }
 
-const parseDate = (dateString: string): Date => {
-  const date = new Date(dateString);
-  return isNaN(date.getTime()) ? new Date() : date;
-};
-
-export function RevenueChart({ data, title, description, className }: RevenueChartProps) {
-  // Determine the time period based on the number of data points
-  const timePeriod = data.length <= 24 ? 'day' : 
-                    data.length <= 31 ? 'week' : 
-                    data.length <= 12 ? 'month' : 'year';
-
-  const chartData = data.map(item => {
-    const date = parseDate(item.date);
-    let name, fullDate;
-    
-    switch(timePeriod) {
-      case 'day':
-        name = format(date, 'HH:mm', { locale: es });
-        fullDate = format(date, 'dd MMMM yyyy HH:mm', { locale: es });
-        break;
-      case 'week':
-        name = format(date, 'EEE', { locale: es });
-        fullDate = format(date, 'dd MMMM yyyy', { locale: es });
-        break;
-      case 'month':
-        name = `Semana ${Math.ceil(date.getDate() / 7)}`;
-        fullDate = format(date, 'MMMM yyyy', { locale: es });
-        break;
-      case 'year':
-      default:
-        name = format(date, 'MMM', { locale: es });
-        fullDate = format(date, 'MMMM yyyy', { locale: es });
-    }
-
+export function RevenueChart({
+  data,
+  title,
+  description,
+  className,
+  period = 'week',
+}: RevenueChartProps) {
+  // Transform the data to include proper labels for display
+  const chartData = data.map((item, index) => {
     return {
-      name,
-      fullDate,
-      revenue: item.revenue,
+      name: item.date, // Use the label directly from API
+      revenue: item.revenue || 0,
+      displayLabel: item.date, // For tooltip display
     };
   });
 
   const percentageChange = 5.2; // Replace with real calculation
+
+  const getPeriodText = () => {
+    switch (period) {
+      case 'week':
+        return 'días';
+      case 'month':
+        return 'semanas';
+      case 'year':
+        return 'meses';
+      default:
+        return 'períodos';
+    }
+  };
 
   return (
     <Card className={className}>
@@ -79,10 +66,10 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
       </CardHeader>
       <CardContent>
         <ChartContainer
-          className="aspect-auto h-[250px] w-full"
+          className="aspect-auto h-[300px] w-full"
           config={{ revenue: { label: 'Ingresos', color: 'var(--chart-1)' } }}
         >
-          <LineChart data={chartData} margin={{ top: 20, left: 12, right: 12 }}>
+          <LineChart data={chartData} margin={{ top: 24, left: 24, right: 24, bottom: 24 }}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="name"
@@ -93,30 +80,18 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
             />
             <ChartTooltip
               cursor={false}
-              content={
-                <ChartTooltipContent
-                  indicator="line"
-                  className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
-                  labelClassName="text-sm font-medium text-muted-foreground"
-                />
-              }
-              formatter={(value: number, name: string, props: any) => {
-                // Get the actual revenue value from the payload
-                const payload = props?.payload;
-                const revenue = payload?.revenue ?? value;
-                const displayValue = revenue || 0; // Ensure we don't show undefined/NaN
-                
-                return [
-                  <span key="value" className="text-foreground">
-                    ${displayValue.toLocaleString('es-ES')}
-                  </span>,
-                  <span key="label" className="text-muted-foreground">
-                    Ingresos totales
-                  </span>,
-                ];
-              }}
-              labelFormatter={(label, payload) => {
-                return payload?.[0]?.payload?.fullDate || label || '';
+              content={({ active, payload, label }) => {
+                if (!active || !payload || payload.length === 0) return null;
+
+                return (
+                  <div className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <p className="text-xs font-medium">
+                      ${(payload[0].value || 0).toLocaleString('es-ES')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Ingresos totales</p>
+                  </div>
+                );
               }}
             />
             <Line
@@ -135,18 +110,20 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
                 fontSize={12}
                 formatter={(value: React.ReactNode) => {
                   const numValue = typeof value === 'number' ? value : 0;
-                  return `$${numValue.toLocaleString('es-ES')}`;
+                  return numValue > 0 ? `$${numValue.toLocaleString('es-ES')}` : '';
                 }}
               />
             </Line>
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
+      <CardFooter className="flex-col items-start gap-2 text-xs">
         <div className="flex gap-2 leading-none font-medium">
           Tendencia de {percentageChange}% <TrendingUp className="h-4 w-4" />
         </div>
-        <div className="text-muted-foreground leading-none">Últimos {data.length} meses</div>
+        <div className="text-muted-foreground leading-none">
+          Últimos {data.length} {getPeriodText()}
+        </div>
       </CardFooter>
     </Card>
   );

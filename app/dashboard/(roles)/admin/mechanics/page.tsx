@@ -331,7 +331,7 @@ export default function MechanicsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold">Mecánicos Pendientes</CardTitle>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-xs">
                   {mechanics.length} solicitud(es) esperando revisión
                 </CardDescription>
               </div>
@@ -349,7 +349,7 @@ export default function MechanicsPage() {
                 >
                   <div className="space-y-1 mb-3 sm:mb-0">
                     <h4 className="font-medium">{mechanic.name}</h4>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-xs">
                       <span className="text-muted-foreground">{mechanic.email}</span>
                       {mechanic.phone && (
                         <span className="text-muted-foreground">{mechanic.phone}</span>
@@ -406,9 +406,9 @@ export default function MechanicsPage() {
                     {mechanic.name || 'Sin nombre'}
                   </CardTitle>
                   <div className="flex flex-col space-y-0.5">
-                    <span className="text-sm text-muted-foreground">{mechanic.email}</span>
+                    <span className="text-xs text-muted-foreground">{mechanic.email}</span>
                     {mechanic.phone && (
-                      <span className="text-sm text-muted-foreground">{mechanic.phone}</span>
+                      <span className="text-xs text-muted-foreground">{mechanic.phone}</span>
                     )}
                   </div>
                 </div>
@@ -483,7 +483,7 @@ export default function MechanicsPage() {
 
                 <div className="space-y-4">
                   <div className="bg-muted/50 rounded-lg p-3">
-                    <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <h4 className="font-medium text-xs mb-3 flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       Este mes
                     </h4>
@@ -511,11 +511,11 @@ export default function MechanicsPage() {
 
                   {mechanic.statistics.lastJob && (
                     <div className="border-t pt-3">
-                      <h4 className="font-medium text-sm mb-2">Último trabajo</h4>
-                      <div className="text-sm space-y-1">
+                      <h4 className="font-medium text-xs mb-2">Último trabajo</h4>
+                      <div className="text-xs space-y-1">
                         <div className="flex justify-between items-center">
                           <span className="font-medium">{mechanic.statistics.lastJob.car}</span>
-                          <Badge className="font-mono text-sm">
+                          <Badge className="font-mono text-xs">
                             {mechanic.statistics.lastJob.licensePlate}
                           </Badge>
                         </div>

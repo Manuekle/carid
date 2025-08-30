@@ -362,7 +362,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
           </CardHeader>
           <CardContent>
             <ChartContainer
-              className="aspect-auto h-[250px] w-full"
+              className="aspect-auto h-[300px] w-full"
               config={{
                 completedJobs: {
                   label: 'Trabajos Completados',
@@ -373,9 +373,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
               <BarChart
                 accessibilityLayer
                 data={data.monthlyStats}
-                margin={{
-                  top: 20,
-                }}
+                margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
               >
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
@@ -384,7 +382,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
                   content={
                     <ChartTooltipContent
                       className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
-                      labelClassName="text-sm font-medium text-muted-foreground"
+                      labelClassName="text-xs font-medium text-muted-foreground"
                       hideLabel
                     />
                   }
@@ -424,7 +422,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
           </CardHeader>
           <CardContent>
             <ChartContainer
-              className="aspect-auto h-[250px] w-full"
+              className="aspect-auto h-[300px] w-full"
               config={{
                 earnings: {
                   label: 'Ganancias',
@@ -435,11 +433,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
               <LineChart
                 accessibilityLayer
                 data={data.monthlyStats}
-                margin={{
-                  top: 20,
-                  left: 12,
-                  right: 12,
-                }}
+                margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
               >
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
@@ -449,7 +443,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
                     <ChartTooltipContent
                       indicator="line"
                       className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
-                      labelClassName="text-sm font-medium text-muted-foreground"
+                      labelClassName="text-xs font-medium text-muted-foreground"
                     />
                   }
                   formatter={(value: string | number, name: string) => [
@@ -461,7 +455,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
                     </span>,
                   ]}
                   labelFormatter={label => (
-                    <span className="text-sm font-medium text-muted-foreground">{label}</span>
+                    <span className="text-xs font-medium text-muted-foreground">{label}</span>
                   )}
                 />
                 <Line

@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
         } else if (period === 'month') {
           // Last 4 weeks
           labels = Array.from({ length: 4 }, (_, i) => `Semana ${i + 1}`);
-          
+
           values = Array.from({ length: 4 }, (_, i) => {
             const weekStart = new Date(now);
             weekStart.setDate(now.getDate() - (3 - i) * 7);
@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
         }
 
         return { labels, values };
-      })()
+      })(),
     };
 
     return NextResponse.json({ stats });

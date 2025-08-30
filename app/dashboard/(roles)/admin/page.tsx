@@ -55,10 +55,11 @@ export default function AdminDashboard() {
     fetchStats();
   }, [selectedPeriod]);
 
+  // Fix: Properly convert the API data to chart format
   const chartData =
     stats?.revenueData?.labels?.map((label, index) => ({
-      name: label,
-      Ingresos: stats.revenueData.values[index] || 0,
+      date: label, // Use the label directly as date
+      revenue: stats.revenueData.values[index] || 0,
     })) || [];
 
   if (isLoading || !session) {
@@ -68,15 +69,6 @@ export default function AdminDashboard() {
   if (error || !stats) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.error('${(error || 'No se pudieron cargar los datos').replace(/'/g, "\\'")}');
-          }
-        `,
-          }}
-        />
         <p className="text-lg font-medium">Error al cargar el panel</p>
         <p className="text-muted-foreground text-xs">
           {error || 'No se pudieron cargar los datos'}
@@ -182,10 +174,8 @@ export default function AdminDashboard() {
                 ? 'Ingresos de este mes'
                 : 'Ingresos de este año'
           }
-          data={chartData.map(item => ({
-            date: item.name,
-            revenue: item.Ingresos,
-          }))}
+          data={chartData}
+          period={selectedPeriod}
         />
       </div>
 
