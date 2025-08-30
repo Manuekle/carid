@@ -390,8 +390,8 @@ export default function TransferDetailsPage({ params }: TransferDetailsProps) {
               {transfer.adminNotes && (
                 <div>
                   <span className="text-gray-600 text-xs">Notas Administrativas:</span>
-                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-blue-800 text-xs">{transfer.adminNotes}</p>
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-gray-700 text-xs">{transfer.adminNotes}</p>
                   </div>
                 </div>
               )}
