@@ -43,7 +43,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header con Logo */}
-      <div className="flex items-center justify-center pt-16">
+      <div className="flex items-center justify-center pt-44">
         <div className="flex items-center space-x-3">
           <div className="p-3 rounded-2xl bg-black">
             <CarFront className="h-8 w-8 text-white" />
@@ -66,14 +66,14 @@ export default function HomePage() {
           </div>
 
           {/* Botones de Acción */}
-          <div className="space-y-2 pt-4">
-            <Button asChild className="w-full h-12 font-medium" size="lg">
+          <div className="space-y-4 pt-4">
+            <Button asChild className="w-full h-12 font-medium">
               <Link href="/auth/login" className="flex items-center justify-center space-x-2">
                 <span>Iniciar Sesión</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" className="w-full h-12 font-medium" size="lg">
+            <Button asChild variant="outline" className="w-full h-12 font-medium">
               <Link href="/auth/register">Crear Cuenta</Link>
             </Button>
           </div>

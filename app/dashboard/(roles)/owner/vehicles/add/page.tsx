@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { QrCode, Download, Copy, Eye, ArrowLeft } from 'lucide-react';
+import { QrCode, Download, Copy, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 
@@ -306,9 +305,15 @@ export default function AddVehiclePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                if (typeof window !== 'undefined') {
+                  toast.error('${error.replace(/'/g, "\\'")}');
+                }
+              `,
+                }}
+              />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

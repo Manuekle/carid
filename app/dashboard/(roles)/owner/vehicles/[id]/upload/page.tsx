@@ -14,10 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Upload, AlertCircle, CloudUpload } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
-import { toast } from 'sonner';
 import Link from 'next/link';
 import { LoadingPage } from '@/components/ui/loading';
 
@@ -200,6 +199,15 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
           <CardHeader>
             <CardTitle>Error</CardTitle>
             <CardDescription>{error}</CardDescription>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+              if (typeof window !== 'undefined') {
+                toast.error('${error.replace(/'/g, "\\'")}');
+              }
+            `,
+              }}
+            />
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline">
@@ -237,10 +245,17 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <div className="text-red-600 text-xs">
+                <script
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                  if (typeof window !== 'undefined') {
+                    toast.error('${error.replace(/'/g, "\\'")}');
+                  }
+                `,
+                  }}
+                />
+              </div>
             )}
 
             {/* Document Type */}
@@ -250,7 +265,7 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
                 value={formData.documentType}
                 onValueChange={value => setFormData(prev => ({ ...prev, documentType: value }))}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="text-xs w-full">
                   <SelectValue placeholder="Selecciona el tipo de documento" />
                 </SelectTrigger>
                 <SelectContent>

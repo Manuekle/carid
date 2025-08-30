@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import {
   Drawer,
   DrawerContent,
@@ -83,7 +83,7 @@ export default function InventoryPage() {
         const data = await response.json();
         setParts(data.parts);
       } else {
-        setError('Error al cargar el inventario');
+        toast.error('Error al cargar el inventario');
       }
     } catch (error: unknown) {
       console.error('Error loading inventory:', error);
@@ -206,9 +206,15 @@ export default function InventoryPage() {
                 </DrawerHeader>
                 <form id="inventory-form" onSubmit={handleSubmit} className="p-4 space-y-4">
                   {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
+                    <script
+                      dangerouslySetInnerHTML={{
+                        __html: `
+                          if (typeof window !== 'undefined') {
+                            toast.error('${error.replace(/'/g, "\\'")}')
+                          }
+                        `,
+                      }}
+                    />
                   )}
 
                   <div className="space-y-2">
@@ -306,13 +312,15 @@ export default function InventoryPage() {
 
         {/* Low Stock Alert */}
         {lowStockParts.length > 0 && (
-          <Alert className="border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-200">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Alerta de Stock Bajo:</strong> {lowStockParts.length} repuesto(s) con stock
-              menor a 10 unidades.
-            </AlertDescription>
-          </Alert>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+            if (typeof window !== 'undefined') {
+              toast.warning('Alerta de Stock Bajo: ${lowStockParts.length} repuesto(s) con stock menor a 10 unidades.');
+            }
+          `,
+            }}
+          />
         )}
 
         {/* Search */}

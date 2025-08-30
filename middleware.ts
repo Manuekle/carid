@@ -168,6 +168,34 @@ export default withAuth(
           return unauthorizedResponse;
         }
       }
+
+      // Validaciones para traspasos
+      if (pathname.startsWith('/api/transfers')) {
+        // Traspasos requieren ser OWNER o ADMIN
+        if (userRole !== UserRole.OWNER && userRole !== UserRole.ADMIN) {
+          return unauthorizedResponse;
+        }
+      }
+
+      if (pathname.startsWith('/api/profile')) {
+        // Perfil accesible por todos los roles autenticados
+        const allowedRoles = [UserRole.ADMIN, UserRole.MECHANIC, UserRole.OWNER];
+        if (!allowedRoles.includes(userRole)) {
+          return unauthorizedResponse;
+        }
+      }
+
+      if (pathname.startsWith('/api/vehicles') && pathname.includes('/transfer')) {
+        // Solo OWNERS pueden iniciar traspasos
+        if (userRole !== UserRole.OWNER) {
+          return unauthorizedResponse;
+        }
+      }
+
+      // Validaciones específicas para admin
+      if (pathname.startsWith('/api/admin/transfers') && userRole !== UserRole.ADMIN) {
+        return unauthorizedResponse;
+      }
     }
 
     // --- Page Route Protection ---
@@ -191,10 +219,19 @@ export default withAuth(
       if (pathname.startsWith('/dashboard/owner') && userRole !== UserRole.OWNER) {
         return NextResponse.redirect(unauthorizedUrl);
       }
+
+      // --- Transfer Routes Protection ---
+      if (pathname.startsWith('/dashboard/owner/transfers') && userRole !== UserRole.OWNER) {
+        return NextResponse.redirect(unauthorizedUrl);
+      }
+
+      if (pathname.startsWith('/dashboard/admin/transfers') && userRole !== UserRole.ADMIN) {
+        return NextResponse.redirect(unauthorizedUrl);
+      }
     }
 
     // --- Profile and shared routes ---
-    if (pathname.startsWith('/profile')) {
+    if (pathname.startsWith('/profile') || pathname.startsWith('/dashboard/profile')) {
       // Permitir acceso a perfil para usuarios autenticados
       const allowedRoles = [UserRole.ADMIN, UserRole.MECHANIC, UserRole.OWNER];
       if (!allowedRoles.includes(userRole)) {

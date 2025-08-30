@@ -392,17 +392,12 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
               <p className="text-xs text-muted-foreground mt-1">VIN: {car.vin}</p>
             </div>
             <div className="flex flex-row justify-center gap-2">
-              {/* <Button
+              <Button
                 variant="outline"
-                onClick={() => {
-                  const qrElement = document.getElementById('vehicle-qr-code');
-                  if (qrElement) {
-                    qrElement.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
+                onClick={() => router.push(`/dashboard/owner/vehicles/${car.id}/transfer`)}
               >
-                Mostrar Código QR
-              </Button> */}
+                Solicitar Traspaso
+              </Button>
               <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
                 <DrawerTrigger asChild>
                   <Button onClick={() => setIsDrawerOpen(true)}>Editar Vehículo</Button>

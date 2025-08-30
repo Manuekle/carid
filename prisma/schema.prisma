@@ -33,6 +33,16 @@ enum MaintenanceStatus {
   CANCELLED
 }
 
+// Enum para el estado del traspaso
+enum TransferStatus {
+  PENDING_SELLER_DOCUMENTS
+  PENDING_BUYER_ACCEPTANCE
+  PENDING_ADMIN_APPROVAL
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
 // User and related auth models
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -54,30 +64,61 @@ model Account {
 }
 
 model User {
-  id              String             @id @default(auto()) @map("_id") @db.ObjectId
-  name            String?
-  phone           String?            @unique
-  email           String?            @unique
-  emailVerified   DateTime?
-  image           String?
-  role            UserRole           @default(OWNER)
-  isApproved      Boolean            @default(false)
-  password        String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  phone         String?   @unique
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(OWNER)
+  isApproved    Boolean   @default(false)
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relationships
-  accounts        Account[]
-  sessions        Session[]
-  loginAttempts   LoginAttempt[]
-  authLogs        AuthLog[]
-  ownedCars       Car[]              @relation("CarOwner")
+  accounts             Account[]
+  sessions             Session[]
+  loginAttempts        LoginAttempt[]
+  authLogs             AuthLog[]
+  ownedCars            Car[]              @relation("CarOwner")
   // Corrected: Explicitly defined relation for mechanics
-  managedMaintenances MaintenanceLog[] @relation("MechanicMaintenance")
-  chatSessions    UserChatSession[]  @relation("UserChats")
-  sentMessages    ChatMessage[]      @relation("MessageSender")
+  managedMaintenances  MaintenanceLog[]   @relation("MechanicMaintenance")
+  chatSessions         UserChatSession[]  @relation("UserChats")
+  sentMessages         ChatMessage[]      @relation("MessageSender")
+  // transfers
+  profile              UserProfile?
+  sellingTransfers     VehicleTransfer[]  @relation("SellerTransfers")
+  buyingTransfers      VehicleTransfer[]  @relation("BuyerTransfers")
+  approvedTransfers    VehicleTransfer[]  @relation("AdminApprovals")
+  uploadedTransferDocs TransferDocument[] @relation("DocumentUploader")
+  verifiedTransferDocs TransferDocument[] @relation("DocumentVerifier")
 
   @@map("users")
+}
+
+// Modelo para los datos de perfil extendidos
+model UserProfile {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String    @unique @db.ObjectId
+  documentType     String? // CC, CE, TI, etc.
+  documentNumber   String?   @unique
+  address          String?
+  city             String?
+  department       String?
+  country          String    @default("Colombia")
+  birthDate        DateTime?
+  emergencyContact String?
+  emergencyPhone   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relationships
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sellerTransfers VehicleTransfer[] @relation("SellerProfile")
+  buyerTransfers  VehicleTransfer[] @relation("BuyerProfile")
+
+  @@map("user_profiles")
 }
 
 model Session {
@@ -127,48 +168,79 @@ model AuthLog {
   @@map("auth_logs")
 }
 
+// Modelo principal para el traspaso
+model VehicleTransfer {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  carId             String         @db.ObjectId
+  sellerId          String         @db.ObjectId
+  sellerProfileId   String         @db.ObjectId
+  buyerId           String         @db.ObjectId
+  buyerProfileId    String         @db.ObjectId
+  status            TransferStatus @default(PENDING_SELLER_DOCUMENTS)
+  salePrice         Float?
+  transferDate      DateTime?
+  completionDate    DateTime?
+  notes             String?
+  adminNotes        String?
+  approvedByAdminId String?        @db.ObjectId
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relationships
+  car             Car                @relation(fields: [carId], references: [id])
+  seller          User               @relation("SellerTransfers", fields: [sellerId], references: [id])
+  buyer           User               @relation("BuyerTransfers", fields: [buyerId], references: [id])
+  sellerProfile   UserProfile        @relation("SellerProfile", fields: [sellerProfileId], references: [id])
+  buyerProfile    UserProfile        @relation("BuyerProfile", fields: [buyerProfileId], references: [id])
+  approvedByAdmin User?              @relation("AdminApprovals", fields: [approvedByAdminId], references: [id])
+  documents       TransferDocument[]
+
+  @@map("vehicle_transfers")
+}
+
 // Core business models
 model Car {
-  id           String          @id @default(auto()) @map("_id") @db.ObjectId
-  vin          String          @unique
-  qrCode       String?         @unique
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  vin          String   @unique
+  qrCode       String?  @unique
   brand        String
   model        String
   year         Int
   color        String
-  licensePlate String          @unique
-  ownerId      String          @db.ObjectId
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  licensePlate String   @unique
+  ownerId      String   @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relationships
-  owner          User            @relation("CarOwner", fields: [ownerId], references: [id])
+  owner           User              @relation("CarOwner", fields: [ownerId], references: [id])
   maintenanceLogs MaintenanceLog[]
-  documents      Document[]
-  chatSessions   ChatSession[]
+  documents       Document[]
+  chatSessions    ChatSession[]
+  transfers       VehicleTransfer[]
 
   @@map("cars")
 }
 
 model MaintenanceLog {
-  id              String            @id @default(auto()) @map("_id") @db.ObjectId
-  carId           String            @db.ObjectId
-  mechanicId      String            @db.ObjectId
-  description     String
-  laborCost       Float
-  totalCost       Float
-  status          MaintenanceStatus @default(IN_PROGRESS)
-  startDate       DateTime          @default(now())
-  estimatedTime   Int?
-  completedDate   DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  carId         String            @db.ObjectId
+  mechanicId    String            @db.ObjectId
+  description   String
+  laborCost     Float
+  totalCost     Float
+  status        MaintenanceStatus @default(IN_PROGRESS)
+  startDate     DateTime          @default(now())
+  estimatedTime Int?
+  completedDate DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   // Relationships
-  car             Car               @relation(fields: [carId], references: [id])
-  mechanic        User              @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
-  invoice         Invoice?
-  usedParts       UsedPart[]
+  car       Car        @relation(fields: [carId], references: [id])
+  mechanic  User       @relation("MechanicMaintenance", fields: [mechanicId], references: [id])
+  invoice   Invoice?
+  usedParts UsedPart[]
 
   @@map("maintenance_logs")
 }
@@ -190,9 +262,9 @@ model Part {
 }
 
 model UsedPart {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId
-  maintenanceLogId String         @db.ObjectId
-  partId           String         @db.ObjectId
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  maintenanceLogId String @db.ObjectId
+  partId           String @db.ObjectId
   quantity         Int
   unitPrice        Float
 
@@ -237,10 +309,10 @@ model Document {
 
 // Chat models
 model ChatSession {
-  id               String            @id @default(auto()) @map("_id") @db.ObjectId
-  carId            String            @db.ObjectId
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  carId     String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
   car              Car               @relation(fields: [carId], references: [id])
@@ -262,15 +334,36 @@ model UserChatSession {
 }
 
 model ChatMessage {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  chatSessionId String      @db.ObjectId
-  senderId      String      @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatSessionId String   @db.ObjectId
+  senderId      String   @db.ObjectId
   message       String
-  sentAt        DateTime    @default(now())
+  sentAt        DateTime @default(now())
 
   // Relationships
   chatSession ChatSession @relation(fields: [chatSessionId], references: [id])
   sender      User        @relation("MessageSender", fields: [senderId], references: [id])
 
   @@map("chat_messages")
+}
+
+// Documentos requeridos para el traspaso
+model TransferDocument {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  transferId   String   @db.ObjectId
+  documentType String // "seller_id", "buyer_id", "sale_contract", etc.
+  fileName     String
+  fileUrl      String
+  uploadedBy   String   @db.ObjectId
+  isRequired   Boolean  @default(true)
+  isVerified   Boolean  @default(false)
+  verifiedBy   String?  @db.ObjectId
+  uploadedAt   DateTime @default(now())
+
+  // Relationships
+  transfer VehicleTransfer @relation(fields: [transferId], references: [id])
+  uploader User            @relation("DocumentUploader", fields: [uploadedBy], references: [id])
+  verifier User?           @relation("DocumentVerifier", fields: [verifiedBy], references: [id])
+
+  @@map("transfer_documents")
 }

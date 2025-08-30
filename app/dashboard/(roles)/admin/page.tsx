@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DollarSign, Wrench, Users, Car, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { LoadingPage } from '@/components/ui/loading';
@@ -67,7 +68,15 @@ export default function AdminDashboard() {
   if (error || !stats) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+          if (typeof window !== 'undefined') {
+            toast.error('${(error || 'No se pudieron cargar los datos').replace(/'/g, "\\'")}');
+          }
+        `,
+          }}
+        />
         <p className="text-lg font-medium">Error al cargar el panel</p>
         <p className="text-muted-foreground text-xs">
           {error || 'No se pudieron cargar los datos'}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Camera, CameraOff, Type } from 'lucide-react';
 import QrScanner from 'qr-scanner';
 import { Input } from '@/components/ui/input';
@@ -144,9 +144,15 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+            if (typeof window !== 'undefined') {
+              toast.error('${error.replace(/'/g, "\\'")}');
+            }
+          `,
+            }}
+          />
         )}
 
         {showManualInput ? (

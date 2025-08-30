@@ -1,3 +1,4 @@
+// config/navigation.ts (actualizado)
 import type { NavLinkGroup } from '@/types/navigation';
 import {
   Car,
@@ -9,6 +10,9 @@ import {
   QrCode,
   Settings,
   Home,
+  User,
+  ArrowLeftRight,
+  Shield,
 } from 'lucide-react';
 
 export const navLinkGroups: NavLinkGroup[] = [
@@ -37,6 +41,13 @@ export const navLinkGroups: NavLinkGroup[] = [
         label: 'Inventario',
         roles: ['ADMIN'],
         description: 'Gestión de repuestos',
+      },
+      {
+        href: '/dashboard/admin/transfers',
+        icon: ArrowLeftRight,
+        label: 'Traspasos',
+        roles: ['ADMIN'],
+        description: 'Administrar traspasos de vehículos',
       },
     ],
   },
@@ -105,6 +116,33 @@ export const navLinkGroups: NavLinkGroup[] = [
             parentHref: '/dashboard/owner/vehicles',
             icon: QrCode,
           },
+          {
+            href: '/dashboard/owner/vehicles/[id]/transfer',
+            label: 'Iniciar Traspaso',
+            description: 'Transferir vehículo a otro propietario',
+            roles: ['OWNER'],
+            isSubLink: true,
+            parentHref: '/dashboard/owner/vehicles',
+            icon: ArrowLeftRight,
+          },
+        ],
+      },
+      {
+        href: '/dashboard/owner/transfers',
+        icon: ArrowLeftRight,
+        label: 'Traspasos',
+        roles: ['OWNER'],
+        description: 'Gestión de traspasos de vehículos',
+        subLinks: [
+          {
+            href: '/dashboard/owner/transfers/[id]',
+            label: 'Detalle del Traspaso',
+            description: 'Ver detalles completos del traspaso',
+            roles: ['OWNER'],
+            isSubLink: true,
+            parentHref: '/dashboard/owner/transfers',
+            icon: FileText,
+          },
         ],
       },
       {
@@ -120,6 +158,20 @@ export const navLinkGroups: NavLinkGroup[] = [
         label: 'Chat',
         roles: ['OWNER'],
         description: 'Comunicación con mecánicos',
+      },
+    ],
+  },
+  {
+    title: 'Mi Cuenta',
+    roles: ['ADMIN', 'MECHANIC', 'OWNER'],
+    icon: User,
+    links: [
+      {
+        href: '/dashboard/profile',
+        icon: User,
+        label: 'Mi Perfil',
+        roles: ['ADMIN', 'MECHANIC', 'OWNER'],
+        description: 'Gestionar información personal',
       },
     ],
   },

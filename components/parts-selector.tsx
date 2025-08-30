@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Search, Plus, Minus, Package } from 'lucide-react';
 import { LoadingPage } from './ui/loading';
 import Image from 'next/image';
@@ -55,10 +55,10 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
         const data = await response.json();
         setParts(data.parts);
       } else {
-        setError('Error al cargar el inventario');
+        toast.error('Error al cargar el inventario');
       }
     } catch (error) {
-      setError('Error al cargar el inventario');
+      toast.error('Error al cargar el inventario');
     } finally {
       setIsLoading(false);
     }
@@ -103,9 +103,15 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
   return (
     <div className="space-y-6">
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+          if (typeof window !== 'undefined') {
+            toast.error('${error.replace(/'/g, "\\'")}');
+          }
+        `,
+          }}
+        />
       )}
 
       {/* Search */}

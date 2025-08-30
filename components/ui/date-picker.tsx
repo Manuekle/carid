@@ -1,8 +1,9 @@
 'use client';
 
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -16,6 +17,21 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, className }: DatePickerProps) {
+  const [date, setDate] = useState<Date | undefined>(
+    value ? (typeof value === 'string' ? new Date(value) : value) : undefined
+  );
+
+  useEffect(() => {
+    setDate(value ? (typeof value === 'string' ? new Date(value) : value) : undefined);
+  }, [value]);
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+    if (onChange) {
+      onChange(selectedDate);
+    }
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -23,16 +39,27 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
           variant={'outline'}
           className={cn(
             'w-full justify-start text-left font-normal text-xs',
-            !value && 'text-muted-foreground',
+            !date && 'text-muted-foreground',
             className
           )}
+          type="button"
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, 'PPP', { locale: es }) : <span>Selecciona una fecha</span>}
+          {date ? format(date, 'PPP', { locale: es }) : <span>Selecciona una fecha</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={value} onSelect={onChange} initialFocus locale={es} />
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={handleDateSelect}
+          initialFocus
+          locale={es}
+          captionLayout="dropdown"
+          fromYear={1900}
+          toYear={new Date().getFullYear()}
+          className="rounded-md border"
+        />
       </PopoverContent>
     </Popover>
   );

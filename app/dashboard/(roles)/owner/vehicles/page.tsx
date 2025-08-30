@@ -185,12 +185,6 @@ export default function VehiclesPage() {
             <p className="text-xs text-muted-foreground mb-6">
               Agrega tu primer vehículo para comenzar a gestionar su historial
             </p>
-            <Button asChild>
-              <Link href="/dashboard/owner/vehicles/add">
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar Vehículo
-              </Link>
-            </Button>
           </CardContent>
         </Card>
       )}

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -81,9 +80,15 @@ export default function CompleteMaintenanceButton({
       </AlertDialog>
       <div className="space-y-4">
         {error && (
-          <Alert variant="destructive" className="text-xs">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+            if (typeof window !== 'undefined') {
+              toast.error('${error.replace(/'/g, "\\'")}');
+            }
+          `,
+            }}
+          />
         )}
         <Button onClick={handleComplete} disabled={isLoading} variant="default" className="text-xs">
           {isLoading ? 'Completando...' : 'Completar Mantenimiento'}

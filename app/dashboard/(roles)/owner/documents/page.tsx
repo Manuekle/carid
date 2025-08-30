@@ -289,7 +289,7 @@ export default function DocumentsPage() {
         {/* Vehicle Filter */}
         <div className="min-w-[200px]">
           <Select value={selectedCarId} onValueChange={setSelectedCarId}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Filtrar por vehículo" />
             </SelectTrigger>
             <SelectContent>
@@ -306,7 +306,7 @@ export default function DocumentsPage() {
         {/* Document Type Filter */}
         <div className="min-w-[200px]">
           <Select value={selectedDocType} onValueChange={setSelectedDocType}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Tipo de documento" />
             </SelectTrigger>
             <SelectContent>
@@ -394,7 +394,6 @@ export default function DocumentsPage() {
                           rel="noopener noreferrer"
                           className="flex items-center"
                         >
-                          <Eye className="h-4 w-4 sm:mr-2" />
                           <span className="sr-only sm:not-sr-only">Ver</span>
                         </a>
                       </Button>
@@ -407,7 +406,6 @@ export default function DocumentsPage() {
                             className="h-9 px-2.5 sm:px-3 text-white"
                             onClick={() => setDocumentToDelete(document)}
                           >
-                            <Trash2 className="h-4 w-4 sm:mr-2" />
                             <span className="sr-only sm:not-sr-only">Eliminar</span>
                           </Button>
                         </AlertDialogTrigger>

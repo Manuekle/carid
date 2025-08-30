@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Car, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       if (result?.error) {
         if (result.error === 'CredentialsSignin') {
-          setError('Credenciales inválidas');
+          toast.error('Credenciales inválidas');
         } else if (result.error.includes('approved')) {
           router.push('/auth/pending-approval');
           return;
@@ -45,7 +45,7 @@ export default function LoginPage() {
           router.push('/auth/pending-approval');
           return;
         } else {
-          setError('Error al iniciar sesión: ' + result.error);
+          toast.error('Error al iniciar sesión: ' + result.error);
           console.error('Sign in error:', result.error);
         }
         setIsLoading(false);
@@ -61,12 +61,12 @@ export default function LoginPage() {
       }
 
       // Si llegamos aquí, hubo un problema inesperado
-      setError('Error inesperado al iniciar sesión');
+      toast.error('Error inesperado al iniciar sesión');
       console.error('Unexpected sign in result:', result);
       setIsLoading(false);
     } catch (error) {
       console.error('Login error:', error);
-      setError('Error inesperado al iniciar sesión');
+      toast.error('Error inesperado al iniciar sesión');
       setIsLoading(false);
     }
   };
@@ -83,9 +83,15 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                if (typeof window !== 'undefined') {
+                  toast.error('${error.replace(/'/g, "\\'")}');
+                }
+              `,
+                }}
+              />
             )}
 
             <div className="space-y-2">

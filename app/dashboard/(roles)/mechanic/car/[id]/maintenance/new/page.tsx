@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import PartsSelector from '@/components/parts-selector';
 import { Car } from '@/types';
@@ -147,13 +147,15 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
 
   if (!car) {
     return (
-      <>
-        <div className="text-center py-12">
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <AlertDescription>No se pudo cargar la información del vehículo</AlertDescription>
-          </Alert>
-        </div>
-      </>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+        if (typeof window !== 'undefined') {
+          toast.error('No se pudo cargar la información del vehículo');
+        }
+      `,
+        }}
+      />
     );
   }
 
@@ -171,9 +173,15 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+              if (typeof window !== 'undefined') {
+                toast.error('${error.replace(/'/g, "\\'")}');
+              }
+            `,
+              }}
+            />
           )}
 
           {/* Work Description */}
@@ -192,6 +200,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
                 <Textarea
                   id="description"
                   value={formData.description}
+                  className="text-xs resize-none"
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                   required
                   placeholder="Ej: Cambio de aceite y filtro, revisión de frenos..."

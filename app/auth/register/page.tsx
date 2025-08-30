@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 import { Car, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -42,14 +42,14 @@ export default function RegisterPage() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      toast.error('Las contraseñas no coinciden');
       setIsLoading(false);
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      toast.error('La contraseña debe tener al menos 6 caracteres');
       setIsLoading(false);
       return;
     }
@@ -72,15 +72,15 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess(data.message);
+        toast.success(data.message);
         setTimeout(() => {
           router.push('/auth/login');
         }, 2000);
       } else {
-        setError(data.error);
+        toast.error(data.error);
       }
     } catch (error) {
-      setError('Error al registrar usuario');
+      toast.error('Error al registrar usuario');
     } finally {
       setIsLoading(false);
     }
@@ -102,15 +102,26 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                if (typeof window !== 'undefined') {
+                  toast.error('${error.replace(/'/g, "\\'")}');
+                }
+              `,
+                }}
+              />
             )}
-
             {success && (
-              <Alert className="border-green-200 bg-green-50 text-green-800">
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                if (typeof window !== 'undefined') {
+                  toast.success('${success.replace(/'/g, "\\'")}');
+                }
+              `,
+                }}
+              />
             )}
 
             <div className="space-y-2">
@@ -157,7 +168,7 @@ export default function RegisterPage() {
                 value={formData.role}
                 onValueChange={value => handleInputChange('role', value)}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="text-xs w-full">
                   <SelectValue placeholder="Selecciona tu rol" />
                 </SelectTrigger>
                 <SelectContent>
