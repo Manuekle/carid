@@ -257,26 +257,6 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
               </Select>
             </div>
 
-            {/* Document Type */}
-            <div className="space-y-2">
-              <Label htmlFor="documentType">Tipo de Documento *</Label>
-              <Select
-                value={formData.documentType}
-                onValueChange={value => setFormData(prev => ({ ...prev, documentType: value }))}
-              >
-                <SelectTrigger className="text-xs w-full">
-                  <SelectValue placeholder="Selecciona el tipo de documento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOCUMENT_TYPES.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Custom Name */}
             <div className="space-y-2">
               <Label htmlFor="customName">Nombre Personalizado (Opcional)</Label>
