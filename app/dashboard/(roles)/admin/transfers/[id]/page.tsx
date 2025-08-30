@@ -175,19 +175,23 @@ export default function AdminTransferDetailsPage({ params }: { params: Promise<{
 
   const getDocumentTypeName = (docType: string) => {
     const typeMap: Record<string, string> = {
-      'buyer_id': 'Identificación del Comprador',
-      'seller_id': 'Identificación del Vendedor',
-      'sale_contract': 'Contrato de Venta',
-      'vehicle_title': 'Título del Vehículo',
-      'bill_of_sale': 'Factura de Venta',
-      'inspection_report': 'Informe de Inspección',
-      'insurance_document': 'Documento de Seguro',
-      'transfer_form': 'Formulario de Traspaso'
+      buyer_id: 'Identificación del Comprador',
+      seller_id: 'Identificación del Vendedor',
+      sale_contract: 'Contrato de Venta',
+      vehicle_title: 'Título del Vehículo',
+      bill_of_sale: 'Factura de Venta',
+      inspection_report: 'Informe de Inspección',
+      insurance_document: 'Documento de Seguro',
+      transfer_form: 'Formulario de Traspaso',
     };
-    
-    return typeMap[docType] || docType.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+
+    return (
+      typeMap[docType] ||
+      docType
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    );
   };
 
   if (loading) {
@@ -320,6 +324,7 @@ export default function AdminTransferDetailsPage({ params }: { params: Promise<{
                   <p className="text-xs font-medium mb-2">Notas administrativas</p>
                   <Textarea
                     id="adminNotes"
+                    disabled={transfer.status !== 'PENDING_ADMIN_APPROVAL'}
                     className="w-full p-2 border rounded-md text-xs resize-none"
                     value={adminNotes}
                     onChange={e => setAdminNotes(e.target.value)}
