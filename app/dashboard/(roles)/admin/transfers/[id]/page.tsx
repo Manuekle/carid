@@ -64,28 +64,9 @@ interface Transfer {
 }
 
 export default function AdminTransferDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  // Get the id from params
-  const [id, setId] = useState<string>('');
-
-  // Initialize the id from params
-  useEffect(() => {
-    const loadParams = async () => {
-      try {
-        const resolvedParams = await params;
-        setId(resolvedParams.id);
-      } catch (error) {
-        console.error('Error loading params:', error);
-      }
-    };
-    loadParams();
-  }, [params]);
-
-  // Show loading state while ID is being resolved
-  if (!id) {
-    return <LoadingPage />;
-  }
   const router = useRouter();
   const { data: session } = useSession();
+  const [id, setId] = useState<string>('');
   const [transfer, setTransfer] = useState<Transfer | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingState, setLoadingState] = useState<{
@@ -99,6 +80,19 @@ export default function AdminTransferDetailsPage({ params }: { params: Promise<{
   });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
+
+  // Initialize the id from params
+  useEffect(() => {
+    const loadParams = async () => {
+      try {
+        const resolvedParams = await params;
+        setId(resolvedParams.id);
+      } catch (error) {
+        console.error('Error loading params:', error);
+      }
+    };
+    loadParams();
+  }, [params]);
 
   useEffect(() => {
     if (!id) return;
@@ -177,6 +171,23 @@ export default function AdminTransferDetailsPage({ params }: { params: Promise<{
 
     const statusInfo = statusMap[status] || { label: status, variant: 'outline' as const };
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+  };
+
+  const getDocumentTypeName = (docType: string) => {
+    const typeMap: Record<string, string> = {
+      'buyer_id': 'Identificación del Comprador',
+      'seller_id': 'Identificación del Vendedor',
+      'sale_contract': 'Contrato de Venta',
+      'vehicle_title': 'Título del Vehículo',
+      'bill_of_sale': 'Factura de Venta',
+      'inspection_report': 'Informe de Inspección',
+      'insurance_document': 'Documento de Seguro',
+      'transfer_form': 'Formulario de Traspaso'
+    };
+    
+    return typeMap[docType] || docType.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   if (loading) {
@@ -388,7 +399,7 @@ export default function AdminTransferDetailsPage({ params }: { params: Promise<{
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-xs text-zinc-800 dark:text-zinc-200">
-                              {doc.documentType}
+                              {getDocumentTypeName(doc.documentType)}
                             </p>
                             {isRequired ? (
                               <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
