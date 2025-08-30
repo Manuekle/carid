@@ -63,9 +63,27 @@ interface Transfer {
   }>;
 }
 
-export default function AdminTransferDetailsPage({ params }: { params: { id: string } }) {
+export default function AdminTransferDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Get the id from params
-  const { id } = params;
+  const [id, setId] = useState<string>('');
+
+  // Initialize the id from params
+  useEffect(() => {
+    const loadParams = async () => {
+      try {
+        const resolvedParams = await params;
+        setId(resolvedParams.id);
+      } catch (error) {
+        console.error('Error loading params:', error);
+      }
+    };
+    loadParams();
+  }, [params]);
+
+  // Show loading state while ID is being resolved
+  if (!id) {
+    return <LoadingPage />;
+  }
   const router = useRouter();
   const { data: session } = useSession();
   const [transfer, setTransfer] = useState<Transfer | null>(null);
