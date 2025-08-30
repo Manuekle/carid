@@ -108,8 +108,8 @@ export default function MechanicChatPage() {
       ) : (
         <Card>
           <CardContent className="text-center h-[calc(100vh-20rem)] flex flex-col items-center justify-center">
-            <h3 className="text-xs ">No tienes mantenimientos activos</h3>
-            <p className="text-xs text-muted-foreground pb-4">
+            <h3 className="text-xs pb-1">No tienes mantenimientos activos</h3>
+            <p className="text-xs text-muted-foreground pb-6">
               El chat estará disponible cuando tengas trabajos en progreso
             </p>
             <Button asChild variant="default">
