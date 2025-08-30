@@ -107,13 +107,12 @@ export default function MechanicChatPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="text-center py-12">
-            <Wrench className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tienes mantenimientos activos</h3>
-            <p className="text-muted-foreground mb-6">
+          <CardContent className="text-center h-[calc(100vh-20rem)] flex flex-col items-center justify-center">
+            <h3 className="text-xs ">No tienes mantenimientos activos</h3>
+            <p className="text-xs text-muted-foreground pb-4">
               El chat estará disponible cuando tengas trabajos en progreso
             </p>
-            <Button asChild variant="outline">
+            <Button asChild variant="default">
               <Link href="/dashboard/mechanic/scanner">Escanear QR para iniciar trabajo</Link>
             </Button>
           </CardContent>

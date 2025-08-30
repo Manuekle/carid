@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import ChatInterface from '@/components/chat/chat-interface';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ChatPageProps {
   params: { carId: string };
@@ -61,13 +62,17 @@ export default async function CarChatPage({ params }: ChatPageProps) {
               </p>
             </div>
           </div>
-
-          <div className="text-center h-[calc(100vh-20rem)] flex items-center justify-center">
-            <p className="text-muted-foreground text-xs">
-              No hay mantenimientos activos para este vehículo. El chat estará disponible cuando un
-              mecánico esté trabajando en tu vehículo.
-            </p>
-          </div>
+          <Card>
+            <CardContent className="text-center h-[calc(100vh-20rem)] flex flex-col items-center justify-center">
+              <p className="text-xs pb-1">No hay mantenimientos activos para este vehículo.</p>
+              <p className="text-xs text-muted-foreground pb-6">
+                El chat estará disponible cuando un mecánico esté trabajando en tu vehículo.
+              </p>
+              <Button asChild variant="default">
+                <Link href="/dashboard/mechanic/scanner">Escanear QR para iniciar trabajo</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </>
     );
