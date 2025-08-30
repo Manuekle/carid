@@ -139,27 +139,94 @@ export async function GET(request: NextRequest) {
       lowStockParts,
 
       // Additional data for charts
-      revenueData: {
-        labels: Array.from({ length: 7 }, (_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (6 - i));
-          return d.toLocaleDateString('es-MX', { weekday: 'short' });
-        }),
-        values: Array.from({ length: 7 }, (_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (6 - i));
-          const dayStart = new Date(d);
-          dayStart.setHours(0, 0, 0, 0);
-          const dayEnd = new Date(d);
-          dayEnd.setHours(23, 59, 59, 999);
+      revenueData: (() => {
+        let labels: string[] = [];
+        let values: number[] = [];
+        const now = new Date();
 
-          const dayMaintenances = (allMaintenances as MaintenanceWithInvoice[]).filter(
-            m => m.completedDate && m.completedDate >= dayStart && m.completedDate <= dayEnd
-          );
+        if (period === 'day') {
+          // Last 24 hours in 1-hour intervals
+          labels = Array.from({ length: 24 }, (_, i) => {
+            const d = new Date(now);
+            d.setHours(d.getHours() - 23 + i);
+            return d.toLocaleTimeString('es-MX', { hour: '2-digit', hour12: true });
+          });
 
-          return dayMaintenances.reduce((sum, m) => sum + (m.invoice?.adminShare || 0), 0);
-        }),
-      },
+          values = Array.from({ length: 24 }, (_, i) => {
+            const hourStart = new Date(now);
+            hourStart.setHours(hourStart.getHours() - 23 + i, 0, 0, 0);
+            const hourEnd = new Date(hourStart);
+            hourEnd.setHours(hourStart.getHours() + 1);
+
+            const hourMaintenances = (allMaintenances as MaintenanceWithInvoice[]).filter(
+              m => m.completedDate && m.completedDate >= hourStart && m.completedDate < hourEnd
+            );
+            return hourMaintenances.reduce((sum, m) => sum + (m.invoice?.adminShare || 0), 0);
+          });
+        } else if (period === 'week') {
+          // Last 7 days
+          labels = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 6 + i);
+            return d.toLocaleDateString('es-MX', { weekday: 'short' });
+          });
+
+          values = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 6 + i);
+            const dayStart = new Date(d);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(d);
+            dayEnd.setHours(23, 59, 59, 999);
+
+            const dayMaintenances = (allMaintenances as MaintenanceWithInvoice[]).filter(
+              m => m.completedDate && m.completedDate >= dayStart && m.completedDate <= dayEnd
+            );
+            return dayMaintenances.reduce((sum, m) => sum + (m.invoice?.adminShare || 0), 0);
+          });
+        } else if (period === 'month') {
+          // Last 4 weeks
+          labels = Array.from({ length: 4 }, (_, i) => `Semana ${i + 1}`);
+          
+          values = Array.from({ length: 4 }, (_, i) => {
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - (3 - i) * 7);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            const weekMaintenances = (allMaintenances as MaintenanceWithInvoice[]).filter(
+              m => m.completedDate && m.completedDate >= weekStart && m.completedDate <= weekEnd
+            );
+            return weekMaintenances.reduce((sum, m) => sum + (m.invoice?.adminShare || 0), 0);
+          });
+        } else if (period === 'year') {
+          // Last 12 months
+          labels = Array.from({ length: 12 }, (_, i) => {
+            const d = new Date(now);
+            d.setMonth(d.getMonth() - 11 + i);
+            return d.toLocaleDateString('es-MX', { month: 'short' });
+          });
+
+          values = Array.from({ length: 12 }, (_, i) => {
+            const monthStart = new Date(now);
+            monthStart.setMonth(now.getMonth() - 11 + i, 1);
+            monthStart.setHours(0, 0, 0, 0);
+            const monthEnd = new Date(monthStart);
+            monthEnd.setMonth(monthStart.getMonth() + 1);
+            monthEnd.setDate(0);
+            monthEnd.setHours(23, 59, 59, 999);
+
+            const monthMaintenances = (allMaintenances as MaintenanceWithInvoice[]).filter(
+              m => m.completedDate && m.completedDate >= monthStart && m.completedDate <= monthEnd
+            );
+            return monthMaintenances.reduce((sum, m) => sum + (m.invoice?.adminShare || 0), 0);
+          });
+        }
+
+        return { labels, values };
+      })()
     };
 
     return NextResponse.json({ stats });

@@ -34,11 +34,37 @@ const parseDate = (dateString: string): Date => {
 };
 
 export function RevenueChart({ data, title, description, className }: RevenueChartProps) {
+  // Determine the time period based on the number of data points
+  const timePeriod = data.length <= 24 ? 'day' : 
+                    data.length <= 31 ? 'week' : 
+                    data.length <= 12 ? 'month' : 'year';
+
   const chartData = data.map(item => {
     const date = parseDate(item.date);
+    let name, fullDate;
+    
+    switch(timePeriod) {
+      case 'day':
+        name = format(date, 'HH:mm', { locale: es });
+        fullDate = format(date, 'dd MMMM yyyy HH:mm', { locale: es });
+        break;
+      case 'week':
+        name = format(date, 'EEE', { locale: es });
+        fullDate = format(date, 'dd MMMM yyyy', { locale: es });
+        break;
+      case 'month':
+        name = `Semana ${Math.ceil(date.getDate() / 7)}`;
+        fullDate = format(date, 'MMMM yyyy', { locale: es });
+        break;
+      case 'year':
+      default:
+        name = format(date, 'MMM', { locale: es });
+        fullDate = format(date, 'MMMM yyyy', { locale: es });
+    }
+
     return {
-      name: format(date, 'MMM', { locale: es }),
-      fullDate: format(date, 'MMMM yyyy', { locale: es }),
+      name,
+      fullDate,
       revenue: item.revenue,
     };
   });
@@ -74,12 +100,15 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
                   labelClassName="text-sm font-medium text-muted-foreground"
                 />
               }
-              formatter={(value: any, name: string, props: any) => {
+              formatter={(value: number, name: string, props: any) => {
                 // Get the actual revenue value from the payload
-                const revenue = props?.payload?.revenue ?? value;
+                const payload = props?.payload;
+                const revenue = payload?.revenue ?? value;
+                const displayValue = revenue || 0; // Ensure we don't show undefined/NaN
+                
                 return [
                   <span key="value" className="text-foreground">
-                    ${Number(revenue).toLocaleString('es-ES')}
+                    ${displayValue.toLocaleString('es-ES')}
                   </span>,
                   <span key="label" className="text-muted-foreground">
                     Ingresos totales
@@ -104,7 +133,10 @@ export function RevenueChart({ data, title, description, className }: RevenueCha
                 offset={12}
                 className="fill-foreground"
                 fontSize={12}
-                formatter={(value: React.ReactNode) => `$${Number(value).toLocaleString('es-ES')}`}
+                formatter={(value: React.ReactNode) => {
+                  const numValue = typeof value === 'number' ? value : 0;
+                  return `$${numValue.toLocaleString('es-ES')}`;
+                }}
               />
             </Line>
           </LineChart>
