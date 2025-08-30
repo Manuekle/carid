@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,18 +119,27 @@ interface MechanicDetail {
   }>;
 }
 
-export default function MechanicDetailPage({ params }: { params: { id: string } }) {
+// Componente corregido para manejar params correctamente
+export default function MechanicDetailPage() {
   const router = useRouter();
+  const params = useParams();
   const [data, setData] = useState<MechanicDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Obtener el ID del mecánico de los parámetros
+  const mechanicId = params?.id as string;
+
   useEffect(() => {
-    fetchMechanicDetail();
-  }, []);
+    if (mechanicId) {
+      fetchMechanicDetail();
+    }
+  }, [mechanicId]);
 
   const fetchMechanicDetail = async () => {
+    if (!mechanicId) return;
+
     try {
-      const response = await fetch(`/api/admin/mechanics/${params.id}`);
+      const response = await fetch(`/api/admin/mechanics/${mechanicId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch mechanic details');
       }
@@ -145,6 +154,8 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
   };
 
   const handleStatusUpdate = async (action: 'approve' | 'reject') => {
+    if (!mechanicId) return;
+
     try {
       const endpoint = action === 'approve' ? '/api/mechanic/approved' : '/api/mechanic/rejected';
 
@@ -153,7 +164,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: params.id }),
+        body: JSON.stringify({ id: mechanicId }),
       });
 
       if (!response.ok) {
@@ -219,8 +230,22 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
     );
   };
 
+  // Mostrar loading mientras carga
   if (isLoading) {
     return <LoadingPage />;
+  }
+
+  // Mostrar error si no hay ID o no se encontraron datos
+  if (!mechanicId) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">ID de mecánico no proporcionado</p>
+        <Button onClick={() => router.back()} className="mt-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver
+        </Button>
+      </div>
+    );
   }
 
   if (!data) {
@@ -254,10 +279,12 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
               onClick={() => handleStatusUpdate('approve')}
               className="bg-green-600 hover:bg-green-700"
             >
+              <UserCheck className="mr-2 h-4 w-4" />
               Aprobar
             </Button>
           ) : (
             <Button variant="destructive" onClick={() => handleStatusUpdate('reject')}>
+              <UserX className="mr-2 h-4 w-4" />
               Suspender
             </Button>
           )}
@@ -275,7 +302,7 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs">{data.mechanic.email}</span>
+              <span className="text-xs">{data.mechanic.email || 'No registrado'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
@@ -296,10 +323,12 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Trabajos Completados</CardTitle>
-            <CheckCircle className="h-4 w-4" />
+            <CheckCircle className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold ">{data.statistics.completedMaintenances}</div>
+            <div className="text-2xl font-semibold tracking-heading">
+              {data.statistics.completedMaintenances}
+            </div>
             <p className="text-xs text-muted-foreground">
               {data.statistics.completionRate.toFixed(1)}% tasa de finalización
             </p>
@@ -309,10 +338,10 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Ganancias Totales</CardTitle>
-            <DollarSign className="h-4 w-4" />
+            <DollarSign className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="text-2xl font-semibold tracking-heading">
               {formatCurrency(data.statistics.totalEarnings)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -324,10 +353,10 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Ingresos Generados</CardTitle>
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="text-2xl font-semibold tracking-heading">
               {formatCurrency(data.statistics.totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -339,10 +368,10 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Tiempo Promedio</CardTitle>
-            <Clock className="h-4 w-4" />
+            <Clock className="h-4 w-4 " />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="text-2xl font-semibold tracking-heading">
               {data.statistics.averageCompletionTime.toFixed(1)}
             </div>
             <p className="text-xs text-muted-foreground">días para completar trabajos</p>
@@ -361,54 +390,48 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
             <CardDescription>Trabajos completados por mes</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              className="aspect-auto h-[300px] w-full"
-              config={{
-                completedJobs: {
-                  label: 'Trabajos Completados',
-                  color: 'var(--chart-1)',
-                },
-              }}
-            >
-              <BarChart
-                accessibilityLayer
-                data={data.monthlyStats}
-                margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
+            {data.monthlyStats.length > 0 ? (
+              <ChartContainer
+                className="aspect-auto h-[300px] w-full"
+                config={{
+                  completedJobs: {
+                    label: 'Trabajos Completados',
+                    color: 'var(--chart-1)',
+                  },
+                }}
               >
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
-                      labelClassName="text-xs font-medium text-muted-foreground"
-                      hideLabel
-                    />
-                  }
-                  formatter={(value: string | number | (string | number)[], name: string) => [
-                    name === 'completedJobs' ? (
-                      <span className="text-foreground">{value} trabajos</span>
-                    ) : (
-                      <span className="text-foreground">{formatCurrency(Number(value))}</span>
-                    ),
-                    <span className="text-muted-foreground">
-                      {name === 'completedJobs' ? 'Trabajos completados' : 'Ganancias'}
-                    </span>,
-                  ]}
-                />
-                <Bar dataKey="completedJobs" fill="#000" radius={[4, 4, 0, 0]}>
-                  <LabelList
-                    dataKey="completedJobs"
-                    position="top"
-                    offset={12}
-                    className="fill-foreground"
-                    fontSize={12}
-                    formatter={(value: React.ReactNode) => `${value} trabajos`}
+                <BarChart
+                  accessibilityLayer
+                  data={data.monthlyStats}
+                  margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={
+                      <ChartTooltipContent
+                        className="bg-background border border-border rounded-lg shadow-lg p-3"
+                        hideLabel
+                      />
+                    }
                   />
-                </Bar>
-              </BarChart>
-            </ChartContainer>
+                  <Bar dataKey="completedJobs" fill="#000" radius={[4, 4, 0, 0]}>
+                    <LabelList
+                      dataKey="completedJobs"
+                      position="top"
+                      offset={12}
+                      className="fill-foreground"
+                      fontSize={12}
+                    />
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                No hay datos disponibles
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -421,66 +444,39 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
             <CardDescription>Ganancias por mes</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              className="aspect-auto h-[300px] w-full"
-              config={{
-                earnings: {
-                  label: 'Ganancias',
-                  color: 'var(--chart-1)',
-                },
-              }}
-            >
-              <LineChart
-                accessibilityLayer
-                data={data.monthlyStats}
-                margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
+            {data.monthlyStats.length > 0 ? (
+              <ChartContainer
+                className="aspect-auto h-[300px] w-full"
+                config={{
+                  earnings: {
+                    label: 'Ganancias',
+                    color: 'var(--chart-1)',
+                  },
+                }}
               >
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      indicator="line"
-                      className="bg-background border border-border rounded-lg shadow-lg p-3 [&_.value]:text-base [&_.value]:font-semibold"
-                      labelClassName="text-xs font-medium text-muted-foreground"
-                    />
-                  }
-                  formatter={(value: string | number, name: string) => [
-                    <span key="value" className="text-foreground">
-                      {formatCurrency(Number(value))}
-                    </span>,
-                    <span key="label" className="text-muted-foreground">
-                      Ganancias totales
-                    </span>,
-                  ]}
-                  labelFormatter={label => (
-                    <span className="text-xs font-medium text-muted-foreground">{label}</span>
-                  )}
-                />
-                <Line
-                  dataKey="earnings"
-                  type="natural"
-                  stroke="#000"
-                  strokeWidth={2}
-                  dot={{
-                    fill: '#000',
-                  }}
-                  activeDot={{
-                    r: 6,
-                  }}
+                <LineChart
+                  accessibilityLayer
+                  data={data.monthlyStats}
+                  margin={{ top: 24, left: 24, right: 24, bottom: 24 }}
                 >
-                  <LabelList
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                  <Line
                     dataKey="earnings"
-                    position="top"
-                    offset={12}
-                    className="fill-foreground"
-                    fontSize={12}
-                    formatter={(value: React.ReactNode) => formatCurrency(Number(value))}
+                    type="natural"
+                    stroke="#000"
+                    strokeWidth={2}
+                    dot={{ fill: '#000' }}
+                    activeDot={{ r: 6 }}
                   />
-                </Line>
-              </LineChart>
-            </ChartContainer>
+                </LineChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                No hay datos disponibles
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -496,27 +492,33 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
             <CardDescription>Propietarios con más trabajos realizados</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {data.topClients.map((client, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <p className="text-xs font-medium">{client.name || 'Sin nombre'}</p>
-                    <p className="text-xs text-muted-foreground">{client.email}</p>
+            {data.topClients.length > 0 ? (
+              <div className="space-y-4">
+                {data.topClients.map((client, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="text-xs font-medium">{client.name || 'Sin nombre'}</p>
+                      <p className="text-xs text-muted-foreground">{client.email}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium">
+                        {client.completedJobs} {client.completedJobs === 1 ? 'trabajo' : 'trabajos'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(client.totalSpent)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-medium">
-                      {client.completedJobs} {client.completedJobs === 1 ? 'trabajo' : 'trabajos'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(client.totalSpent)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay clientes registrados
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -529,27 +531,35 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
             <CardDescription>Repuestos más frecuentes</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {data.topParts.slice(0, 5).map((part, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <p className="text-xs font-medium">{part.name}</p>
-                    <p className="text-xs text-muted-foreground">Usado {part.timesUsed} veces</p>
+            {data.topParts.length > 0 ? (
+              <div className="space-y-4">
+                {data.topParts.slice(0, 5).map((part, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="text-xs font-medium">{part.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Usado {part.timesUsed} {part.timesUsed === 1 ? 'vez' : 'veces'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-purple-600">
+                        {part.totalQuantity} {part.totalQuantity === 1 ? 'unidad' : 'unidades'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(part.totalValue)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-medium text-purple-600">
-                      {part.totalQuantity} unidades
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(part.totalValue)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-xs py-8 text-muted-foreground">
+                No hay partes registradas
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -563,37 +573,49 @@ export default function MechanicDetailPage({ params }: { params: { id: string } 
           <CardDescription>Últimos mantenimientos realizados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {data.recentJobs.slice(0, 5).map((job, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className="text-xs font-medium">
-                      {job.car.brand} {job.car.model}
+          {data.recentJobs.length > 0 ? (
+            <div className="space-y-4">
+              {data.recentJobs.slice(0, 5).map((job, index) => (
+                <div
+                  key={job.id || index}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-xs font-medium">
+                        {job.car.brand} {job.car.model}
+                      </p>
+                      <Badge variant="outline">{job.car.licensePlate}</Badge>
+                      {getStatusBadge(job.status)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">{job.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Propietario: {job.car.owner.name} • Iniciado:{' '}
+                      {new Date(job.startDate).toLocaleDateString('es-CO')}
+                      {job.completedDate && (
+                        <>
+                          {' '}
+                          • Completado: {new Date(job.completedDate).toLocaleDateString('es-CO')}
+                        </>
+                      )}
                     </p>
-                    <Badge variant="outline">{job.car.licensePlate}</Badge>
-                    {getStatusBadge(job.status)}
                   </div>
-                  <p className="text-xs text-muted-foreground mb-1">{job.description}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Propietario: {job.car.owner.name} • Iniciado:{' '}
-                    {new Date(job.startDate).toLocaleDateString('es-CO')}
-                    {job.completedDate && (
-                      <> • Completado: {new Date(job.completedDate).toLocaleDateString('es-CO')}</>
-                    )}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-xs font-medium">
+                      {formatCurrency(job.invoice?.mechanicShare || job.laborCost)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Total: {formatCurrency(job.invoice?.totalCost || job.totalCost)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs font-medium ">
-                    {formatCurrency(job.invoice?.mechanicShare || job.laborCost)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Total: {formatCurrency(job.invoice?.totalCost || job.totalCost)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-xs py-8 text-muted-foreground">
+              No hay trabajos registrados
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -78,7 +78,8 @@ export function RevenueChart({
               tickMargin={8}
               tick={{ fontSize: 12 }}
             />
-            <ChartTooltip
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+            {/* <ChartTooltip
               cursor={false}
               content={({ active, payload, label }) => {
                 if (!active || !payload || payload.length === 0) return null;
@@ -93,7 +94,7 @@ export function RevenueChart({
                   </div>
                 );
               }}
-            />
+            /> */}
             <Line
               dataKey="revenue"
               type="natural"

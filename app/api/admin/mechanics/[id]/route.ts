@@ -50,7 +50,11 @@ interface PartUsage {
   };
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
+export async function GET(request: Request, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -58,7 +62,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const mechanic = await prisma.user.findUnique({
       where: {
