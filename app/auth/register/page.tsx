@@ -101,28 +101,8 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                if (typeof window !== 'undefined') {
-                  toast.error('${error.replace(/'/g, "\\'")}');
-                }
-              `,
-                }}
-              />
-            )}
-            {success && (
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                if (typeof window !== 'undefined') {
-                  toast.success('${success.replace(/'/g, "\\'")}');
-                }
-              `,
-                }}
-              />
-            )}
+            {error && toast.error(error)}
+            {success && toast.success(success)}
 
             <div className="space-y-2">
               <Label htmlFor="name">Nombre Completo</Label>

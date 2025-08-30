@@ -205,17 +205,7 @@ export default function InventoryPage() {
                   </DrawerDescription>
                 </DrawerHeader>
                 <form id="inventory-form" onSubmit={handleSubmit} className="p-4 space-y-4">
-                  {error && (
-                    <script
-                      dangerouslySetInnerHTML={{
-                        __html: `
-                          if (typeof window !== 'undefined') {
-                            toast.error('${error.replace(/'/g, "\\'")}')
-                          }
-                        `,
-                      }}
-                    />
-                  )}
+                  {error && toast.error(error)}
 
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre del Repuesto</Label>

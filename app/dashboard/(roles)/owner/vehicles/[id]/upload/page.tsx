@@ -199,15 +199,6 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
           <CardHeader>
             <CardTitle>Error</CardTitle>
             <CardDescription>{error}</CardDescription>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-              if (typeof window !== 'undefined') {
-                toast.error('${error.replace(/'/g, "\\'")}');
-              }
-            `,
-              }}
-            />
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline">
@@ -244,19 +235,27 @@ export default function UploadDocumentPage({ params }: { params: Promise<{ id: s
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="text-red-600 text-xs">
-                <script
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                  if (typeof window !== 'undefined') {
-                    toast.error('${error.replace(/'/g, "\\'")}');
-                  }
-                `,
-                  }}
-                />
-              </div>
-            )}
+            {error && toast.error(error)}
+
+            {/* Document Type */}
+            <div className="space-y-2">
+              <Label htmlFor="documentType">Tipo de Documento *</Label>
+              <Select
+                value={formData.documentType}
+                onValueChange={value => setFormData(prev => ({ ...prev, documentType: value }))}
+              >
+                <SelectTrigger className="text-xs w-full">
+                  <SelectValue placeholder="Selecciona el tipo de documento" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_TYPES.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Document Type */}
             <div className="space-y-2">

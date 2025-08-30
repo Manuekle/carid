@@ -143,17 +143,7 @@ export default function QRScanner({ onScan, onError, isLoading = false }: QRScan
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-            if (typeof window !== 'undefined') {
-              toast.error('${error.replace(/'/g, "\\'")}');
-            }
-          `,
-            }}
-          />
-        )}
+        {error && toast.error(error)}
 
         {showManualInput ? (
           <form onSubmit={handleManualSubmit} className="space-y-4">

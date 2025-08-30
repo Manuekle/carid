@@ -159,17 +159,7 @@ export default function TransfersPage() {
         <Button onClick={() => router.push('/dashboard/owner/vehicles')}>Mis Vehículos</Button>
       </div>
 
-      {error && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.error('${error.replace(/'/g, "\\'")}');
-          }
-        `,
-          }}
-        />
-      )}
+      {error && toast.error(error)}
 
       {transfers.length === 0 ? (
         <Card>

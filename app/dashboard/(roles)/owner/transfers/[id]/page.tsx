@@ -255,19 +255,7 @@ export default function TransferDetailsPage({ params }: TransferDetailsProps) {
   }
 
   if (!transfer) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.error('No se pudo cargar la información del traspaso');
-          }
-        `,
-          }}
-        />
-      </div>
-    );
+    return toast.error('No se pudo cargar la información del traspaso');
   }
 
   const currentStep = getCurrentStep();
@@ -285,17 +273,7 @@ export default function TransferDetailsPage({ params }: TransferDetailsProps) {
         </div>
       </div>
 
-      {message && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.${message.type}('${message.text.replace(/'/g, "\\'")}');
-          }
-        `,
-          }}
-        />
-      )}
+      {message && toast.success(message.text)}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">

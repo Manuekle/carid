@@ -102,17 +102,7 @@ export default function PartsSelector({ selectedParts, onPartsChange }: PartsSel
 
   return (
     <div className="space-y-6">
-      {error && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.error('${error.replace(/'/g, "\\'")}');
-          }
-        `,
-          }}
-        />
-      )}
+      {error && toast.error(error)}
 
       {/* Search */}
       <div className="relative">

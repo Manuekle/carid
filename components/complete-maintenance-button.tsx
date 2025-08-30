@@ -79,17 +79,8 @@ export default function CompleteMaintenanceButton({
         </AlertDialogContent>
       </AlertDialog>
       <div className="space-y-4">
-        {error && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-            if (typeof window !== 'undefined') {
-              toast.error('${error.replace(/'/g, "\\'")}');
-            }
-          `,
-            }}
-          />
-        )}
+        {error && toast.error(error)}
+
         <Button onClick={handleComplete} disabled={isLoading} variant="default" className="text-xs">
           {isLoading ? 'Completando...' : 'Completar Mantenimiento'}
         </Button>

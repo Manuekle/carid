@@ -186,17 +186,7 @@ export default function AdminTransfersPage() {
         </div>
       </div>
 
-      {error && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (typeof window !== 'undefined') {
-                toast.error('${error.replace(/'/g, "\\'")}')
-              }
-            `,
-          }}
-        />
-      )}
+      {error && toast.error(error)}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">

@@ -172,17 +172,7 @@ export default function NewMaintenancePage({ params }: NewMaintenancePageProps) 
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {error && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-              if (typeof window !== 'undefined') {
-                toast.error('${error.replace(/'/g, "\\'")}');
-              }
-            `,
-              }}
-            />
-          )}
+          {error && toast.error(error)}
 
           {/* Work Description */}
           <Card>

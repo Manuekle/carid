@@ -102,34 +102,12 @@ export default function TransferPage({ params }: TransferPageProps) {
   }
 
   if (!car) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.error('No se pudo cargar la información del vehículo');
-          }
-        `,
-          }}
-        />
-      </div>
-    );
+    return toast.error('No se pudo cargar la información del vehículo');
   }
 
   return (
     <div className="space-y-6">
-      {message && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          if (typeof window !== 'undefined') {
-            toast.${message.type}('${message.text.replace(/'/g, "\\'")}');
-          }
-        `,
-          }}
-        />
-      )}
+      {message && toast[message.type](message.text)}
 
       <div className="space-y-6">
         <div className="flex items-center space-x-4">

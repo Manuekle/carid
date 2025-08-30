@@ -82,17 +82,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                if (typeof window !== 'undefined') {
-                  toast.error('${error.replace(/'/g, "\\'")}');
-                }
-              `,
-                }}
-              />
-            )}
+            {error && toast.error(error)}
 
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico</Label>

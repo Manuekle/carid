@@ -4,12 +4,22 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
 import { useSession } from 'next-auth/react';
+import {
+  FileText,
+  Eye,
+  Download,
+  Check,
+  X,
+  ArrowLeft,
+  CheckCircle,
+  Loader2,
+  XCircle,
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, FileText, Loader2, XCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { LoadingPage } from '@/components/ui/loading';
@@ -156,17 +166,7 @@ export default function AdminTransferDetailsPage({ params }: { params: { id: str
   }
 
   if (!transfer) {
-    return (
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-        if (typeof window !== 'undefined') {
-          toast.error('No se pudo cargar la información del traspaso');
-        }
-      `,
-        }}
-      />
-    );
+    return toast.error('No se pudo cargar la información del traspaso');
   }
 
   return (
@@ -184,17 +184,7 @@ export default function AdminTransferDetailsPage({ params }: { params: { id: str
         <div className="flex items-center gap-2">{getStatusBadge(transfer.status)}</div>
       </div>
 
-      {message && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (typeof window !== 'undefined') {
-                toast.${message.type}('${message.text.replace(/'/g, "\\'")}');
-              }
-            `,
-          }}
-        />
-      )}
+      {message && toast.success(message.text)}
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Vehicle Details */}
@@ -363,28 +353,115 @@ export default function AdminTransferDetailsPage({ params }: { params: { id: str
             </CardHeader>
             <CardContent>
               {transfer.documents.length > 0 ? (
-                <div className="space-y-2">
-                  {transfer.documents.map(doc => (
-                    <div key={doc.id} className="group relative">
-                      <a
-                        href={doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded text-xs transition-colors"
+                <div className="space-y-3">
+                  {transfer.documents.map(doc => {
+                    const docType = doc.documentType.toLowerCase();
+                    const isRequired =
+                      docType.includes('cedula') ||
+                      docType.includes('identificacion') ||
+                      docType.includes('matricula');
+
+                    return (
+                      <div
+                        key={doc.id}
+                        className="rounded-2xl p-4 bg-white/60 dark:bg-zinc-900/40 border border-zinc-200/40 dark:border-zinc-800/40 shadow-sm backdrop-blur-sm"
                       >
-                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="truncate">{doc.fileName}</span>
-                        {doc.isVerified && (
-                          <Badge
-                            variant="default"
-                            className="ml-auto px-2 py-0.5 text-[10px] bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800"
-                          >
-                            Verificado
-                          </Badge>
-                        )}
-                      </a>
-                    </div>
-                  ))}
+                        {/* Header */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-xs text-zinc-800 dark:text-zinc-200">
+                              {doc.documentType}
+                            </p>
+                            {isRequired ? (
+                              <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
+                                Requerido
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                                Opcional
+                              </Badge>
+                            )}
+                          </div>
+
+                          {!doc.isVerified && (
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
+                              Pendiente
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Body */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                            <FileText className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{doc.fileName}</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(doc.fileUrl, '_blank')}
+                              className="flex items-center"
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              <span>Ver</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(doc.fileUrl, '_blank', 'download')}
+                              className="flex items-center"
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              <span>Descargar</span>
+                            </Button>
+                            <div className="ml-auto">
+                              <Button
+                                size="sm"
+                                variant={doc.isVerified ? 'outline' : 'default'}
+                                onClick={async () => {
+                                  try {
+                                    await fetch(
+                                      `/api/transfers/${transfer.id}/documents/${doc.id}/verify`,
+                                      {
+                                        method: 'PATCH',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                          isVerified: !doc.isVerified,
+                                        }),
+                                      }
+                                    );
+                                    // Refresh the page to show updated status
+                                    window.location.reload();
+                                  } catch (error) {
+                                    console.error('Error updating document verification:', error);
+                                    toast.error(
+                                      'Error al actualizar la verificación del documento'
+                                    );
+                                  }
+                                }}
+                                className="flex items-center gap-1"
+                              >
+                                {doc.isVerified ? (
+                                  <>
+                                    <X className="h-3 w-3" />
+                                    <span>Desmarcar</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check className="h-3 w-3" />
+                                    <span>Verificar</span>
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">No hay documentos adjuntos</p>

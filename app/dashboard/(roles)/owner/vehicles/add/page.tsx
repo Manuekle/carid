@@ -304,19 +304,21 @@ export default function AddVehiclePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                if (typeof window !== 'undefined') {
-                  toast.error('${error.replace(/'/g, "\\'")}');
-                }
-              `,
-                }}
-              />
-            )}
+            {error && toast.error(error)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="brand">Marca *</Label>
+                <Input
+                  id="brand"
+                  value={formData.brand}
+                  onChange={e => handleInputChange('brand', e.target.value)}
+                  required
+                  placeholder="Ej: Toyota, Honda, Chevrolet"
+                  className="focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="brand">Marca *</Label>
                 <Input
