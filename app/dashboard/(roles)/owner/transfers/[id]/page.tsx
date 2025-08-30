@@ -500,15 +500,13 @@ export default function TransferDetailsPage({ params }: TransferDetailsProps) {
         </div>
 
         <div className="space-y-6">
-          {/* Participants */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-heading">
-                Participantes
+                Partes Interesadas
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Seller */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <User className="h-4 w-4 text-black" />
@@ -648,7 +646,7 @@ export default function TransferDetailsPage({ params }: TransferDetailsProps) {
                           ? 'Pendiente del vendedor'
                           : type.includes('buyer')
                             ? 'Pendiente del comprador'
-                            : 'No subido'}
+                            : 'El documento no se subió'}
                       </p>
                     )}
                   </div>

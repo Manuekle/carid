@@ -387,7 +387,15 @@ export default function ProfilePage() {
             <CardContent className="text-xs space-y-2">
               <div>
                 <span className="text-gray-600">Rol:</span>
-                <span className="ml-2 font-medium">{session?.user?.role}</span>
+                <span className="ml-2 font-medium">
+                  {session?.user?.role === 'ADMIN'
+                    ? 'ADMINISTRADOR'
+                    : session?.user?.role === 'MECHANIC'
+                      ? 'MECÁNICO'
+                      : session?.user?.role === 'OWNER'
+                        ? 'PROPIETARIO'
+                        : session?.user?.role}
+                </span>
               </div>
               <div>
                 <span className="text-gray-600">Miembro desde:</span>

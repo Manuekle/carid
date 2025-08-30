@@ -504,13 +504,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                 <DollarSign className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">Total Gastado</p>
-                  <p className="text-xs font-medium">
-                    $
-                    {totalSpent.toLocaleString('es-CO', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
+                  <p className="text-xs font-medium">${totalSpent.toLocaleString('es-CO')}</p>
                 </div>
               </div>
             </div>
@@ -573,7 +567,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                           )}
                           {log.invoice && (
                             <div className="flex items-center">
-                              ${log.invoice.totalCost.toFixed(2)}
+                              ${Math.round(log.invoice.totalCost).toLocaleString('es-ES')}
                             </div>
                           )}
                         </div>

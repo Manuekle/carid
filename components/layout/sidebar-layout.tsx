@@ -285,7 +285,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       .sort((a, b) => b.href.length - a.href.length)
       .find(link => isMatchingRoute(link.href, pathname));
 
-    const crumbs = [{ href: homePath, label: 'Dashboard' }];
+    const crumbs = [{ href: homePath, label: 'Inicio' }];
 
     if (!currentLink) return crumbs;
 

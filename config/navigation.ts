@@ -21,13 +21,13 @@ export const navLinkGroups: NavLinkGroup[] = [
     roles: ['ADMIN'],
     icon: Settings,
     links: [
-      {
-        href: '/dashboard/admin',
-        icon: Home,
-        label: 'Inicio',
-        roles: ['ADMIN'],
-        description: 'Panel de control administrativo',
-      },
+      // {
+      //   href: '/dashboard/admin',
+      //   icon: Home,
+      //   label: 'Inicio',
+      //   roles: ['ADMIN'],
+      //   description: 'Panel de control administrativo',
+      // },
       {
         href: '/dashboard/admin/mechanics',
         icon: Users,
@@ -56,13 +56,13 @@ export const navLinkGroups: NavLinkGroup[] = [
     roles: ['MECHANIC'],
     icon: Wrench,
     links: [
-      {
-        href: '/dashboard/mechanic',
-        icon: Home,
-        label: 'Inicio',
-        roles: ['MECHANIC'],
-        description: 'Panel de control del mecánico',
-      },
+      // {
+      //   href: '/dashboard/mechanic',
+      //   icon: Home,
+      //   label: 'Inicio',
+      //   roles: ['MECHANIC'],
+      //   description: 'Panel de control del mecánico',
+      // },
       {
         href: '/dashboard/mechanic/scanner',
         icon: QrCode,
